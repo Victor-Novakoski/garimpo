@@ -1,0 +1,13 @@
+# Decisões
+
+Registro das escolhas e do porquê. A mais nova em cima.
+
+| Data | Decisão | Por quê |
+| --- | --- | --- |
+| 10/11/2026 | IA atrás de uma interface `Scorer`, com duas implementações: API do Claude (Haiku) e `claude -p` local | A API custa uns R$ 5 a 10 por mês; o modo local usa o plano do Claude que o Victor já paga. Trocar não mexe no resto |
+| 10/11/2026 | Nota híbrida: até 70 pontos em código e até 30 da IA, com filtro duro antes | Nota explicável e barata: a IA só vê o que passou no filtro e não consegue furar regra. Ideia tirada da friday, do Carlos Junio |
+| 10/11/2026 | Foco no Brasil: repositórios de vagas no GitHub e Gupy primeiro; Greenhouse e Lever depois | O Victor busca vaga brasileira por enquanto. A friday já cobre bem o lado internacional |
+| 10/11/2026 | Sem LinkedIn e sem candidatura automática | LinkedIn proíbe scraping e bloqueia conta. Candidatura em massa rende menos entrevista; o valor está em escolher bem |
+| 10/11/2026 | Job diário no GitHub Actions em vez de um worker sempre ligado | Cabe no plano grátis e o histórico de execuções fica visível no repositório |
+| 10/11/2026 | Go para coleta, nota e API; React no painel | É a stack que o Victor quer mostrar nas vagas que procura |
+| 10/11/2026 | Nome: garimpo | Curto, em português, e diz o que faz: peneira muita vaga e fica com o ouro |
