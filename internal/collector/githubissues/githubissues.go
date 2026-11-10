@@ -147,10 +147,13 @@ func companyFromTitle(title string) string {
 			}
 		}
 	}
-	// "Cargo | Empresa | 4 dias": the company is the first segment after.
-	if i := strings.Index(t, " | "); i >= 0 {
-		if c := cleanCompany(t[i+3:]); c != "" {
-			return c
+	// "Cargo | Empresa | 4 dias": the company is the first valid segment
+	// after the job title.
+	if parts := strings.Split(t, " | "); len(parts) > 1 {
+		for _, p := range parts[1:] {
+			if c := cleanCompany(p); c != "" {
+				return c
+			}
 		}
 	}
 	// "Cargo - Empresa": the company is the last segment.
@@ -191,6 +194,36 @@ var notCompany = map[string]bool{
 	"pj": true, "clt": true, "freela": true, "junior": true, "jr": true,
 	"pleno": true, "senior": true, "sr": true, "brasil": true, "brazil": true,
 	"sao paulo": true, "home office": true, "vaga": true, "urgente": true,
+	"usd": true, "brl": true, "eur": true, "us$": true, "r$": true,
+}
+
+// brazilianStates are UF codes that show up after a dash ("- RJ").
+var brazilianStates = map[string]bool{
+	"ac": true, "al": true, "ap": true, "am": true, "ba": true, "ce": true, "df": true,
+	"es": true, "go": true, "ma": true, "mt": true, "ms": true, "mg": true, "pa": true,
+	"pb": true, "pr": true, "pe": true, "pi": true, "rj": true, "rn": true, "rs": true,
+	"ro": true, "rr": true, "sc": true, "sp": true, "se": true, "to": true,
+}
+
+// stackWords mark a segment that lists technologies, not a company
+// ("React.js, Nest.js, Kafka", "Net+React", "Node.js + React").
+var stackWords = map[string]bool{
+	"react": true, "react.js": true, "node": true, "node.js": true, "nest.js": true,
+	"net": true, ".net": true, "java": true, "python": true, "go": true, "golang": true,
+	"kafka": true, "typescript": true, "javascript": true, "angular": true, "vue": true,
+	"php": true, "ruby": true, "c#": true, "aws": true, "ai": true, "ia": true,
+}
+
+func looksLikeStack(s string) bool {
+	if strings.ContainsAny(s, "+,") {
+		return true
+	}
+	for _, w := range normalize.Words(s) {
+		if stackWords[w] {
+			return true
+		}
+	}
+	return false
 }
 
 // cleanCompany cuts details after the name ("Aurum | US$ 5k",
@@ -205,7 +238,8 @@ func cleanCompany(s string) string {
 	s = strings.TrimFunc(s, func(r rune) bool {
 		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
 	})
-	if s == "" || notCompany[normalize.Fold(s)] {
+	folded := normalize.Fold(s)
+	if s == "" || notCompany[folded] || brazilianStates[folded] || looksLikeStack(s) {
 		return ""
 	}
 	return s
