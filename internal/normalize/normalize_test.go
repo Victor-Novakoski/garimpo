@@ -68,6 +68,21 @@ func TestClassify(t *testing.T) {
 			want: job.Job{WorkMode: job.WorkModeRemote},
 		},
 		{
+			name: "levels as roman numerals",
+			in:   job.Job{Title: "[Crédito] Software Engineer III - C#"},
+			want: job.Job{Seniority: job.SeniorityMid},
+		},
+		{
+			name: "level I is junior",
+			in:   job.Job{Title: "SOFTWARE ENGINEER I .NET"},
+			want: job.Job{Seniority: job.SeniorityJunior},
+		},
+		{
+			name: "head is senior",
+			in:   job.Job{Title: "Head of Engineering"},
+			want: job.Job{Seniority: job.SenioritySenior},
+		},
+		{
 			name: "pl/sql is not pleno",
 			in:   job.Job{Title: "Analista PL/SQL"},
 			want: job.Job{},
@@ -130,6 +145,8 @@ func TestIsTech(t *testing.T) {
 		{job.Job{Title: "Agente Stone - Consultor(a) Comercial Externo | Toledo"}, false},
 		{job.Job{Title: "Account Executive - Hunter (Hibrido/SP)", Tags: []string{"Sales"}}, false},
 		{job.Job{Title: "Analista Financeiro"}, false},
+		{job.Job{Title: "Vendedor(a) Externo (6 horas) | Rio Verde/GO"}, false},
+		{job.Job{Title: "Executivo(a) Comercial Externo | Anápolis/GO"}, false},
 	}
 	for _, tt := range tests {
 		if got := IsTech(tt.job); got != tt.want {

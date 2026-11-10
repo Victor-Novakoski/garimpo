@@ -63,9 +63,9 @@ var contractWords = []rule[job.Contract]{
 // seniorityWords lists Pleno first: a "Pleno/Sênior" range is reachable
 // for a mid-level person, so ranges resolve to their lowest common level.
 var seniorityWords = []rule[job.Seniority]{
-	{[]string{"pleno", "mid", "mid level"}, job.SeniorityMid},
-	{[]string{"senior", "sr", "especialista", "lead", "staff", "principal"}, job.SenioritySenior},
-	{[]string{"junior", "jr", "trainee"}, job.SeniorityJunior},
+	{[]string{"pleno", "mid", "mid level", "ii", "iii"}, job.SeniorityMid},
+	{[]string{"senior", "sr", "especialista", "lead", "staff", "principal", "head", "iv"}, job.SenioritySenior},
+	{[]string{"junior", "jr", "trainee", "i"}, job.SeniorityJunior},
 }
 
 // Classify fills WorkMode, Contract and Seniority when the source left them
@@ -202,8 +202,11 @@ var techWords = []string{
 	"developer", "desenvolvedor", "desenvolvedora", "dev", "programador", "programadora",
 	"software", "backend", "back end", "frontend", "front end", "fullstack", "full stack",
 	"mobile", "android", "ios", "devops", "sre", "qa", "tech lead", "arquiteto", "arquiteta",
-	"data", "dados", "machine learning", "golang", "go", "react", "node", "java", "python",
+	"data", "dados", "machine learning", "golang", "react", "node", "java", "python",
 }
+
+// Plain "go" is not a tech word: it is also the state code of Goiás
+// ("Vendedor Externo | Rio Verde/GO"). Go jobs say developer or engineer.
 
 // IsTech reports whether the posting is a technology job. Community repos
 // only post tech jobs; company boards mix in sales, finance and the rest.
