@@ -4,6 +4,7 @@ Registro das escolhas e do porquê. A mais nova em cima.
 
 | Data | Decisão | Por quê |
 | --- | --- | --- |
+| 10/11/2026 | Skill na seção de requisitos vale ponto cheio; links não contam; vaga sem nenhuma skill do perfil sai no filtro | Na segunda nota real, a Jazida pedia React nos requisitos e levava só metade, a Coodesh ganhava React por um `utm_medium=react-brasil-vagas` e vagas de vendas e ciência de dados com 0 de tecnologia ainda apareciam |
 | 10/11/2026 | Depois da primeira nota real: skill só na descrição vale metade; "go-to-market" e "React Native" não contam como Go e React; staff, principal e head viram nível `lead`; modelo não informado vale 2 de 10 | O QuintoAndar ganhava 30 pontos com o mesmo parágrafo de stack em toda vaga, uma vaga de vendas ganhou Go por "go-to-market" e "Head of Engineering" passava como sênior |
 | 10/11/2026 | Depois da coleta real: título vence etiqueta e local; faixa "Pleno/Sênior" vira Pleno; só vagas de tech por padrão (`-all` mostra tudo); duplicadas pela mesma empresa com títulos parecidos | Na primeira coleta (499 vagas), issues tinham etiquetas "Remoto" e "Híbrido" juntas, só ~100 vagas do Greenhouse eram de tech e a mesma vaga aparecia em três repositórios com títulos um pouco diferentes |
 | 10/11/2026 | Greenhouse entra já na etapa 1, com Stone, QuintoAndar e Wildlife Studios | É API oficial e pública, e foi a fonte brasileira com mais vagas na pesquisa (Stone sozinha tinha 347) |

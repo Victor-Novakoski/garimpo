@@ -54,14 +54,16 @@ func TestScore(t *testing.T) {
 		t.Fatalf("Points = %d, want %d; reasons %v", r.Points, Max, r.Reasons)
 	}
 
-	weak := job.Job{Title: "Dev Java Sênior", Contract: job.ContractCLT, Seniority: job.SenioritySenior}
+	weak := job.Job{Title: "Dev Java Sênior", Description: "Docker", Contract: job.ContractCLT, Seniority: job.SenioritySenior}
 	r = Score(p, weak)
-	// no skills 0 + unknown mode 2 + clt 4 + senior 6 = 12
-	if r.Points != 12 {
-		t.Fatalf("Points = %d, want 12; reasons %v", r.Points, r.Reasons)
+	// Docker in the description 1 + unknown mode 2 + clt 4 + senior 6 = 13
+	if r.Points != 13 {
+		t.Fatalf("Points = %d, want 13; reasons %v", r.Points, r.Reasons)
 	}
-	if r.Reasons[0].Text != "nenhuma tecnologia do perfil" {
-		t.Errorf("first reason = %v", r.Reasons[0])
+
+	none := Score(p, job.Job{Title: "GTM Engineer", WorkMode: job.WorkModeRemote})
+	if none.Dropped != "nenhuma tecnologia do perfil" {
+		t.Errorf("job with no profile skill: Dropped = %q", none.Dropped)
 	}
 }
 
@@ -81,12 +83,13 @@ func TestSkillsCap(t *testing.T) {
 func TestRank(t *testing.T) {
 	p := example(t)
 	jobs := []job.Job{
-		{Source: "a", SourceID: "1", Title: "Dev Java"},
+		{Source: "a", SourceID: "1", Title: "Dev Java Docker"},
 		{Source: "a", SourceID: "2", Title: "Dev Go React", WorkMode: job.WorkModeRemote},
 		{Source: "a", SourceID: "3", Title: "Dev Go", WorkMode: job.WorkModeOnsite},
+		{Source: "a", SourceID: "4", Title: "Analista Comercial"},
 	}
 	kept, dropped := Rank(p, jobs)
-	if dropped != 1 || len(kept) != 2 || kept[0].Job.SourceID != "2" {
+	if dropped != 2 || len(kept) != 2 || kept[0].Job.SourceID != "2" {
 		t.Fatalf("kept = %v, dropped = %d", kept, dropped)
 	}
 }
@@ -122,5 +125,36 @@ func TestLeadIsDropped(t *testing.T) {
 	p := example(t)
 	if got := Filter(p, job.Job{Title: "Head of Engineering", Seniority: job.SeniorityLead}); got == "" {
 		t.Fatal("lead role passed a profile that does not accept it")
+	}
+}
+
+func TestSkillsRequirementsAndURLs(t *testing.T) {
+	p := example(t)
+	points := func(j job.Job) map[string]int {
+		got := map[string]int{}
+		for _, r := range skills(p, j) {
+			got[r.Text] = r.Points
+		}
+		return got
+	}
+	desc := "Sobre nós: nossa stack tem Go e Java.\n\nRequisitos:\n- Experiência com React.js\n\nDiferenciais:\n- TypeScript\n\nBenefícios: plano de saúde"
+	got := points(job.Job{Title: "Dev Fullstack", Description: desc})
+	want := map[string]int{
+		"pede React nos requisitos":    12, // full: listed as a requirement
+		"cita Go na descrição":         8,  // half: company stack paragraph
+		"cita TypeScript na descrição": 3,  // half: nice to have
+	}
+	for k, v := range want {
+		if got[k] != v {
+			t.Errorf("%s = %d, want %d (all: %v)", k, got[k], v, got)
+		}
+	}
+
+	got = points(job.Job{
+		Title:       "Mobile Developer React Native",
+		Description: "Candidate-se: https://coodesh.com/vagas/mobile-react-native?utm_medium=react-brasil-vagas",
+	})
+	if _, ok := got["cita React na descrição"]; ok {
+		t.Errorf("React counted from a URL: %v", got)
 	}
 }

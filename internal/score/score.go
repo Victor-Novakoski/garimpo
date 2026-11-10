@@ -6,6 +6,7 @@ package score
 
 import (
 	"fmt"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -80,6 +81,13 @@ func Score(p profile.Profile, j job.Job) Result {
 		return r
 	}
 	r.Reasons = append(r.Reasons, skills(p, j)...)
+	if len(p.Skills) > 0 && r.Reasons[0].Points == 0 {
+		// Sales, data science or security roles at tech companies pass the
+		// other rules; with none of the profile's skills they are noise.
+		r.Reasons = nil
+		r.Dropped = "nenhuma tecnologia do perfil"
+		return r
+	}
 	r.Reasons = append(r.Reasons, workMode(p, j), contract(p, j), seniority(p, j))
 	for _, reason := range r.Reasons {
 		r.Points += reason.Points
@@ -88,12 +96,14 @@ func Score(p profile.Profile, j job.Job) Result {
 }
 
 // skills gives each profile skill the posting asks for its points, capped
-// at SkillMax. A skill in the title or labels earns full points; one found
-// only in the description earns half, since descriptions often carry a
-// company-wide stack paragraph ("our stack: java, kotlin, go, react...").
+// at SkillMax. A skill in the title, the labels or the requirements section
+// of the description earns full points; one found only elsewhere in the
+// description earns half, since descriptions often carry a company-wide
+// stack paragraph ("our stack: java, kotlin, go, react...").
 func skills(p profile.Profile, j job.Job) []Reason {
 	head := skillText(j.Title + " " + strings.Join(j.Tags, " "))
 	body := skillText(j.Description)
+	reqs := requirements(body)
 	var reasons []Reason
 	total := 0
 	for _, s := range p.Skills {
@@ -101,6 +111,8 @@ func skills(p profile.Profile, j job.Job) []Reason {
 		switch {
 		case mentions(head, s):
 			pts, where = s.Points, "pede "+s.Name
+		case mentions(reqs, s):
+			pts, where = s.Points, "pede "+s.Name+" nos requisitos"
 		case mentions(body, s):
 			pts, where = (s.Points+1)/2, "cita "+s.Name+" na descrição"
 		default:
@@ -119,14 +131,58 @@ func skills(p profile.Profile, j job.Job) []Reason {
 	return reasons
 }
 
+// requirementsStart and requirementsEnd are headings, as folded words, that
+// open and close the part of a description listing what the job asks for.
+var (
+	requirementsStart = []string{
+		"requisitos", "requirements", "qualificacoes", "qualifications",
+		"o que esperamos", "o que buscamos", "o que voce precisa", "voce precisa ter",
+		"what you ll need", "what we re looking for", "what you bring", "must have",
+	}
+	requirementsEnd = []string{
+		"diferenciais", "desejavel", "desejaveis", "nice to have", "bonus points",
+		"beneficios", "benefits", "o que oferecemos", "what we offer",
+		"sobre a empresa", "sobre nos", "about us",
+	}
+)
+
+// requirements returns the requirements section of a skillText, or "" when
+// the description has no such heading.
+func requirements(text string) string {
+	start := firstIndex(text, requirementsStart)
+	if start < 0 {
+		return ""
+	}
+	rest := text[start:]
+	if end := firstIndex(rest[1:], requirementsEnd); end >= 0 {
+		rest = rest[:end+2] // keep the space before the closing heading
+	}
+	return rest
+}
+
+// firstIndex is the position of the earliest whole-word phrase in text.
+func firstIndex(text string, phrases []string) int {
+	best := -1
+	for _, ph := range phrases {
+		if i := strings.Index(text, " "+ph+" "); i >= 0 && (best < 0 || i < best) {
+			best = i
+		}
+	}
+	return best
+}
+
 // notSkills are phrases that contain a skill name but mean something else.
 var notSkills = strings.NewReplacer(
 	" go to market ", " gtm ",
 	" react native ", " reactnative ", // mobile; add "React Native" as its own skill
 )
 
+// urls match links, whose paths and tracking parameters often carry words
+// like "react" that say nothing about the job.
+var urls = regexp.MustCompile(`(?i)(https?://|www\.)[^\s)\]>"']+`)
+
 func skillText(s string) string {
-	t := " " + strings.Join(normalize.Words(s), " ") + " "
+	t := " " + strings.Join(normalize.Words(urls.ReplaceAllString(s, " ")), " ") + " "
 	// Replace twice so overlapping matches ("go to market go to market") go too.
 	return notSkills.Replace(notSkills.Replace(t))
 }
