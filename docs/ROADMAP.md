@@ -10,14 +10,17 @@ Seis etapas, um PR por etapa para a `develop`. Ao fim da etapa 2 o Garimpo já e
 
 ## Etapa 1: coleta (8 a 12 h)
 
-- [ ] Coletores: backend-br/vagas, frontendbr/vagas, Gupy (só uso pessoal, desligado por padrão)
-- [ ] Cliente HTTP educado (timeout, limite de tamanho, intervalo, `User-Agent`)
-- [ ] Normalização e remoção de duplicadas, com testes usando respostas salvas
+- [x] Coletores: backend-br/vagas, frontendbr/vagas, react-brasil/vagas, Gupy (só uso pessoal, desligado por padrão)
+- [x] Coletor do Greenhouse para empresas brasileiras (adiantado da etapa 5: é a fonte oficial com mais vagas)
+- [x] Cliente HTTP educado (timeout, limite de tamanho, intervalo, `User-Agent`)
+- [x] Normalização e remoção de duplicadas, com testes usando respostas salvas
+- [x] Comando `garimpo collect`
 
 ## Etapa 2: nota e aviso (8 a 12 h)
 
 - [ ] Perfil YAML (e `profile.example.yaml`)
-- [ ] Filtro duro e nota determinística com motivos
+- [ ] Filtro duro e nota determinística com motivos (incluindo país: o Greenhouse traz vagas do México, Argentina e Chile)
+- [ ] Modelo de trabalho das vagas do QuintoAndar e da Wildlife, que hoje saem sem modelo
 - [ ] Nota com IA atrás da interface `Scorer`
 - [ ] Job diário no GitHub Actions + resumo no Telegram
 
@@ -36,6 +39,6 @@ Seis etapas, um PR por etapa para a `develop`. Ao fim da etapa 2 o Garimpo já e
 
 ## Etapa 5: vitrine (5 a 8 h)
 
-- [ ] Coletores de Greenhouse e Lever
+- [ ] Coletor do Lever e mais empresas no Greenhouse
 - [ ] README com prints, diagrama e as decisões
 - [ ] Modo demo com dados fictícios, para ver sem login

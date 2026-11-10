@@ -6,10 +6,11 @@ Toda fonte passa por aqui antes de virar coletor: como acessar, o que os termos 
 | --- | --- | --- | --- |
 | [backend-br/vagas](https://github.com/backend-br/vagas) | Issues pela API REST do GitHub | Aprovada | Baixo: API oficial, vagas publicadas para serem lidas |
 | [frontendbr/vagas](https://github.com/frontendbr/vagas) | Issues pela API REST do GitHub | Aprovada | Baixo: mesmo caso |
+| [react-brasil/vagas](https://github.com/react-brasil/vagas) | Issues pela API REST do GitHub | Aprovada | Baixo: mesmo caso |
 | Gupy | Dados embutidos na página de busca (`portal.gupy.io/job-search`, `__NEXT_DATA__`) | Só uso pessoal, desligada por padrão | Alto: os termos proíbem "agregar, copiar ou duplicar"; a API antiga já dá 404 |
-| Greenhouse | Job Board API pública (`boards-api.greenhouse.io`), por empresa | Aprovada, etapa 5 | Baixo: API oficial e pública |
+| Greenhouse | Job Board API pública (`boards-api.greenhouse.io`), por empresa: Stone, QuintoAndar, Wildlife Studios | Aprovada | Baixo: API oficial e pública. Muitas vagas fora de tech; o filtro da etapa 2 cuida disso |
 | Lever | Postings API pública (`api.lever.co/v0/postings`), por empresa | Aprovada, etapa 5 | Baixo: API oficial e pública |
-| Sólides | Página de vagas (`vagas.solides.com.br`); API pública não encontrada | A verificar | robots.txt libera tudo; termos de candidato não encontrados |
+| Sólides | Dados embutidos na página (`vagas.solides.com.br`, Next.js); API pública não encontrada | A verificar | robots.txt libera tudo; só há termos B2B; a busca devolveu vagas fora de tech |
 | Inhire | A pesquisar | A verificar | robots.txt libera tudo; termos não lidos |
 | LinkedIn | Não entra | Recusada | Proíbe scraping e bloqueia conta |
 
@@ -29,7 +30,7 @@ Formato observado: a busca devolve até 12 vagas em `props.pageProps.initialJobL
 ## O que falta verificar
 
 - [ ] **Sólides e Inhire**: se têm API pública de vagas e o que os termos de candidato dizem.
-- [ ] **Greenhouse e Lever**: lista de empresas brasileiras que usam e contratam remoto.
+- [ ] **Greenhouse e Lever**: mais empresas brasileiras. Nubank tem board mas sem vagas; iFood, Creditas, CloudWalk e Loft não usam Greenhouse.
 - [ ] **GitHub**: limite de 60 pedidos por hora sem token; no Actions usar o `GITHUB_TOKEN`.
 
 ## Regras de coleta

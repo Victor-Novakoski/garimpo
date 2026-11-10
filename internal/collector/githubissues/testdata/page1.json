@@ -1,0 +1,27 @@
+[
+  {
+    "number": 101,
+    "title": "[Remoto] Desenvolvedor Go Pleno na Acme Pagamentos",
+    "html_url": "https://github.com/backend-br/vagas/issues/101",
+    "body": "## Descrição\nTime de pagamentos.\n\n## Requisitos\n- Go\n- PostgreSQL",
+    "created_at": "2026-11-05T12:00:00Z",
+    "labels": [{"name": "Remoto"}, {"name": "PJ"}, {"name": "Pleno"}, {"name": "Go"}]
+  },
+  {
+    "number": 102,
+    "title": "Atualiza o README",
+    "html_url": "https://github.com/backend-br/vagas/pull/102",
+    "body": "",
+    "created_at": "2026-11-06T12:00:00Z",
+    "pull_request": {"url": "https://api.github.com/repos/backend-br/vagas/pulls/102"},
+    "labels": []
+  },
+  {
+    "number": 103,
+    "title": "[São Paulo] Backend Sênior Java @ Banco Exemplo - Presencial",
+    "html_url": "https://github.com/backend-br/vagas/issues/103",
+    "body": "Vaga presencial.",
+    "created_at": "2026-11-07T09:30:00Z",
+    "labels": [{"name": "CLT"}, {"name": "Sênior"}]
+  }
+]

@@ -33,8 +33,7 @@ func RunAll(ctx context.Context, collectors []Collector) ([]Result, error) {
 	for _, c := range collectors {
 		jobs, err := c.Collect(ctx)
 		if err != nil {
-			err = fmt.Errorf("%s: %w", c.Name(), err)
-			errs = append(errs, err)
+			errs = append(errs, fmt.Errorf("%s: %w", c.Name(), err))
 		}
 		results = append(results, Result{Source: c.Name(), Jobs: jobs, Err: err})
 	}
