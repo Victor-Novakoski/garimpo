@@ -43,9 +43,9 @@ O perfil (skills com pontos, o que aceitar, o que preferir, o que evitar) fica n
 
 | Parte | Pontos | Como |
 | --- | --- | --- |
-| Tecnologias | até 40 | soma dos pontos de cada skill do perfil citada no título, etiquetas ou descrição |
-| Modelo | 10 / 4 / 5 | preferido / aceito / não informado |
+| Tecnologias | até 40 | pontos de cada skill do perfil: cheios se está no título ou nas etiquetas, metade se só na descrição (muita empresa cola o mesmo parágrafo de stack em toda vaga) |
+| Modelo | 10 / 4 / 2 | preferido / aceito / não informado (baixo de propósito: vaga sem marcação muitas vezes é presencial) |
 | Contrato | 10 / 4 / 5 | preferido / aceito / não informado |
-| Nível | 10 / 6 / 0 / 5 | igual / um acima ou abaixo / distante / não informado |
+| Nível | 10 / 6 / 0 / 5 | igual / um acima ou abaixo / distante / não informado. Staff, principal e head são `lead`, um nível à parte |
 
-Vaga sem a informação passa no filtro e ganha metade dos pontos daquela parte: melhor ver e descartar do que perder uma vaga boa mal etiquetada.
+Vaga sem a informação passa no filtro e ganha poucos pontos daquela parte: melhor ver e descartar do que perder uma vaga boa mal etiquetada.
