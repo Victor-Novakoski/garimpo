@@ -48,6 +48,31 @@ func TestClassify(t *testing.T) {
 			want: job.Job{WorkMode: job.WorkModeRemote, Seniority: job.SenioritySenior},
 		},
 		{
+			name: "title wins over contradicting labels",
+			in:   job.Job{Title: "[Remoto] Fullstack Developer - Jazida.com", Tags: []string{"Remoto", "Híbrido"}},
+			want: job.Job{WorkMode: job.WorkModeRemote},
+		},
+		{
+			name: "seniority range resolves to pleno",
+			in:   job.Job{Title: "Mobile Developer React Native (Pleno)", Tags: []string{"Pleno", "Senior"}},
+			want: job.Job{Seniority: job.SeniorityMid},
+		},
+		{
+			name: "labels used when the title is silent",
+			in:   job.Job{Title: "Dev Go", Tags: []string{"Remoto", "Híbrido", "Sênior"}},
+			want: job.Job{WorkMode: job.WorkModeHybrid, Seniority: job.SenioritySenior},
+		},
+		{
+			name: "location gives the work mode",
+			in:   job.Job{Title: "Software Engineer", Location: "Remote - Brazil"},
+			want: job.Job{WorkMode: job.WorkModeRemote},
+		},
+		{
+			name: "pl/sql is not pleno",
+			in:   job.Job{Title: "Analista PL/SQL"},
+			want: job.Job{},
+		},
+		{
 			name: "no false match inside words",
 			in:   job.Job{Title: "Desenvolvedor Golang para plataforma de pjogos"},
 			want: job.Job{},

@@ -40,65 +40,73 @@ func Words(s string) []string {
 	})
 }
 
-var workModeWords = []struct {
+// rule maps words to a value.
+type rule[V any] struct {
 	words []string
-	mode  job.WorkMode
-}{
+	value V
+}
+
+var workModeWords = []rule[job.WorkMode]{
 	// Hybrid first: "remoto/híbrido" postings are not fully remote.
 	{[]string{"hibrido", "hibrida", "hybrid"}, job.WorkModeHybrid},
-	{[]string{"presencial", "onsite", "on-site"}, job.WorkModeOnsite},
+	{[]string{"presencial", "onsite", "on site"}, job.WorkModeOnsite},
 	{[]string{"remoto", "remota", "remote", "home office", "anywhere"}, job.WorkModeRemote},
 }
 
-var contractWords = []struct {
-	words    []string
-	contract job.Contract
-}{
+var contractWords = []rule[job.Contract]{
 	{[]string{"estagio", "estagiario", "internship"}, job.ContractInternship},
 	{[]string{"pj", "pessoa juridica"}, job.ContractPJ},
 	{[]string{"freelancer", "freelance", "freela"}, job.ContractFreelance},
 	{[]string{"clt"}, job.ContractCLT},
 }
 
-var seniorityWords = []struct {
-	words     []string
-	seniority job.Seniority
-}{
+// seniorityWords lists Pleno first: a "Pleno/Sênior" range is reachable
+// for a mid-level person, so ranges resolve to their lowest common level.
+var seniorityWords = []rule[job.Seniority]{
+	{[]string{"pleno", "mid", "mid level"}, job.SeniorityMid},
 	{[]string{"senior", "sr", "especialista", "lead", "staff", "principal"}, job.SenioritySenior},
-	{[]string{"pleno", "pl", "mid", "mid-level"}, job.SeniorityMid},
 	{[]string{"junior", "jr", "trainee"}, job.SeniorityJunior},
 }
 
 // Classify fills WorkMode, Contract and Seniority when the source left them
-// unknown, looking at tags first and then the title. Description text is
-// not used: it mentions other levels and models too often.
+// unknown. The title wins over the location, which wins over the labels:
+// community repos often carry contradicting labels ("Remoto" and "Híbrido")
+// while the title states the real one. Description text is not used: it
+// mentions other levels and models too often.
 func Classify(j job.Job) job.Job {
-	text := " " + strings.Join(Words(strings.Join(j.Tags, " ")+" "+j.Title), " ") + " "
+	title := wordText(j.Title)
+	location := wordText(j.Location)
+	tags := wordText(strings.Join(j.Tags, " "))
 	if j.WorkMode == job.WorkModeUnknown {
-		for _, w := range workModeWords {
-			if containsAny(text, w.words) {
-				j.WorkMode = w.mode
-				break
-			}
-		}
+		j.WorkMode = firstMatch(workModeWords, title, location, tags)
 	}
 	if j.Contract == job.ContractUnknown {
-		for _, c := range contractWords {
-			if containsAny(text, c.words) {
-				j.Contract = c.contract
-				break
-			}
-		}
+		j.Contract = firstMatch(contractWords, title, tags)
 	}
 	if j.Seniority == job.SeniorityUnknown {
-		for _, s := range seniorityWords {
-			if containsAny(text, s.words) {
-				j.Seniority = s.seniority
-				break
+		j.Seniority = firstMatch(seniorityWords, title, tags)
+	}
+	return j
+}
+
+// firstMatch walks the texts in order of trust and returns the value of
+// the first table entry found in the first text that matches any entry.
+func firstMatch[V any](rules []rule[V], texts ...string) V {
+	for _, text := range texts {
+		for _, r := range rules {
+			if containsAny(text, r.words) {
+				return r.value
 			}
 		}
 	}
-	return j
+	var zero V
+	return zero
+}
+
+// wordText is s as space-separated words with a space on each side, ready
+// for whole-word matching.
+func wordText(s string) string {
+	return " " + strings.Join(Words(s), " ") + " "
 }
 
 func containsAny(text string, words []string) bool {
