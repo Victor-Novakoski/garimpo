@@ -93,18 +93,26 @@ func TestClassify(t *testing.T) {
 func TestDedupe(t *testing.T) {
 	jobs := []job.Job{
 		{Source: "a", SourceID: "1", Company: "Acme", Title: "Dev Go"},
-		{Source: "a", SourceID: "1", Company: "Acme", Title: "Dev Go"}, // same key
-		{Source: "b", SourceID: "9", Company: "ACME", Title: "dev go"}, // same opening elsewhere
-		{Source: "b", SourceID: "10", Title: "Dev Go"},                 // no company: kept
-		{Source: "b", SourceID: "11", Title: "Dev Go"},                 // no company: kept
-		{Source: "b", SourceID: "12", Company: "Acme", Title: "Dev React"},
+		{Source: "a", SourceID: "1", Company: "Acme", Title: "Dev Go"},          // same key
+		{Source: "b", SourceID: "9", Company: "ACME", Title: "[Remoto] dev go"}, // same opening elsewhere
+		{Source: "b", SourceID: "10", Title: "Dev Go"},                          // no company: kept
+		{Source: "b", SourceID: "11", Title: "Dev Go"},                          // no company: kept
+		{Source: "b", SourceID: "12", Company: "Acme", Title: "Dev React"},      // other opening
+		{Source: "c", SourceID: "1", Company: "WeatherWise",
+			Title: "[Remoto] Desenvolvedor(a) Full Stack Sênior — AI & Agentes | WeatherWise | 4 dias / 32h"},
+		{Source: "d", SourceID: "2", Company: "WeatherWise",
+			Title: "[Remoto] Desenvolvedor(a) Full Stack Sênior - AI & Agentes - WeatherWise"},
+		{Source: "e", SourceID: "3", Company: "WeatherWise",
+			Title: "Full Stack Sênior AI & Agentes"},
+		{Source: "e", SourceID: "4", Company: "WeatherWise",
+			Title: "Designer de Produto"},
 	}
 	got := Dedupe(jobs)
 	var keys []string
 	for _, j := range got {
 		keys = append(keys, j.Key())
 	}
-	want := []string{"a:1", "b:10", "b:11", "b:12"}
+	want := []string{"a:1", "b:10", "b:11", "b:12", "c:1", "e:4"}
 	if !reflect.DeepEqual(keys, want) {
 		t.Fatalf("Dedupe keys = %v, want %v", keys, want)
 	}

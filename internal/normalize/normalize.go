@@ -119,27 +119,80 @@ func containsAny(text string, words []string) bool {
 }
 
 // Dedupe drops repeated postings, keeping the first seen. Two postings are
-// the same when they share a Key (same source and id) or a Fingerprint
-// (same company and title in different sources).
+// the same when they share a Key (same source and id), or when they come
+// from the same company with titles that match after dropping tags, work
+// mode, contract and level words (the same opening posted in several
+// community repos with small title changes).
 func Dedupe(jobs []job.Job) []job.Job {
 	seenKey := make(map[string]bool, len(jobs))
-	seenPrint := make(map[string]bool, len(jobs))
+	byCompany := make(map[string][]map[string]bool)
 	out := make([]job.Job, 0, len(jobs))
 	for _, j := range jobs {
 		if seenKey[j.Key()] {
 			continue
 		}
-		fp := j.Fingerprint()
-		if fp != "" && seenPrint[fp] {
-			continue
+		company := Fold(j.Company)
+		var tokens map[string]bool
+		if company != "" {
+			tokens = titleTokens(j.Title, company)
+			if anySimilar(tokens, byCompany[company]) {
+				continue
+			}
+			byCompany[company] = append(byCompany[company], tokens)
 		}
 		seenKey[j.Key()] = true
-		if fp != "" {
-			seenPrint[fp] = true
-		}
 		out = append(out, j)
 	}
 	return out
+}
+
+// noiseWords say nothing about which opening a title is.
+var noiseWords = map[string]bool{
+	"remoto": true, "remota": true, "remote": true, "hibrido": true, "hybrid": true,
+	"presencial": true, "pj": true, "clt": true, "vaga": true, "de": true, "da": true,
+	"do": true, "e": true, "em": true, "para": true, "na": true, "no": true, "a": true,
+	"o": true, "com": true, "and": true, "the": true, "for": true, "brasil": true,
+}
+
+func titleTokens(title, company string) map[string]bool {
+	companyWords := make(map[string]bool)
+	for _, w := range Words(company) {
+		companyWords[w] = true
+	}
+	tokens := make(map[string]bool)
+	for _, w := range Words(title) {
+		if noiseWords[w] || companyWords[w] {
+			continue
+		}
+		tokens[w] = true
+	}
+	return tokens
+}
+
+// anySimilar reports whether tokens matches any earlier title: a Jaccard
+// similarity of at least 0.6, or one title containing the other when the
+// shorter has at least three words.
+func anySimilar(tokens map[string]bool, earlier []map[string]bool) bool {
+	for _, e := range earlier {
+		common := 0
+		for w := range tokens {
+			if e[w] {
+				common++
+			}
+		}
+		union := len(tokens) + len(e) - common
+		if union == 0 {
+			return true
+		}
+		if float64(common)/float64(union) >= 0.6 {
+			return true
+		}
+		shorter := min(len(tokens), len(e))
+		if shorter >= 3 && common == shorter {
+			return true
+		}
+	}
+	return false
 }
 
 // techWords mark a posting as a technology job. Checked against the title
