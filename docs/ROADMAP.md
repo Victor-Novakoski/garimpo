@@ -6,11 +6,11 @@ Seis etapas, um PR por etapa para a `develop`. Ao fim da etapa 2 o Garimpo já e
 
 - [x] README, AGENTS.md e docs (arquitetura, decisões, roadmap, fontes)
 - [x] Esqueleto Go (`cmd/garimpo`, `internal/`), testes e CI
-- [ ] Confirmar o acesso de cada fonte em [SOURCES.md](SOURCES.md) (Gupy primeiro)
+- [x] Confirmar o acesso da Gupy em [SOURCES.md](SOURCES.md)
 
 ## Etapa 1: coleta (8 a 12 h)
 
-- [ ] Coletores: backend-br/vagas, frontendbr/vagas, Gupy
+- [ ] Coletores: backend-br/vagas, frontendbr/vagas, Gupy (só uso pessoal, desligado por padrão)
 - [ ] Cliente HTTP educado (timeout, limite de tamanho, intervalo, `User-Agent`)
 - [ ] Normalização e remoção de duplicadas, com testes usando respostas salvas
 

@@ -40,7 +40,7 @@ go run ./cmd/garimpo  # roda a CLI
 ## Regras da ferramenta (não quebrar)
 
 - **Nunca se candidata sozinha.** O Garimpo acha, filtra, dá nota e prepara. O clique final é sempre de uma pessoa.
-- **Sem LinkedIn.** Nada de scraping de LinkedIn nem de site que proíba coleta automatizada. Cada fonte nova é conferida em [docs/SOURCES.md](docs/SOURCES.md) antes de entrar.
+- **Sem LinkedIn.** Nada de scraping de LinkedIn nem de site que proíba coleta automatizada. Cada fonte nova é conferida em [docs/SOURCES.md](docs/SOURCES.md) antes de entrar. Fonte cujos termos proíbem agregar (Gupy) só roda como uso pessoal: desligada por padrão, só link para a vaga original e nunca no demo público.
 - **Coleta educada:** só GET, hosts fixos, timeout, limite de tamanho de resposta, intervalo entre pedidos e um `User-Agent` que identifica o projeto.
 - **A IA não manda na regra.** O filtro duro roda antes e a IA não consegue tirar uma vaga dele. A nota da IA tem teto (30 de 100) e saída validada.
 - **Nota explicável:** todo ponto da nota tem um motivo legível.
