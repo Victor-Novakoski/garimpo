@@ -55,6 +55,8 @@ cmd/garimpo/          a CLI (garimpo collect)
 internal/job/         o modelo de vaga
 internal/httpx/       o cliente HTTP educado, único caminho para a rede
 internal/normalize/   classificação (modelo, contrato, nível) e duplicadas
+internal/profile/     o perfil (o que aceitar, evitar e quanto vale cada skill)
+internal/score/       filtro duro e nota de 0 a 70 com motivos
 internal/collector/   a interface dos coletores e um pacote por fonte
 docs/                 arquitetura, roadmap, decisões, fontes
 ```

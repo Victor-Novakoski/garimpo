@@ -211,7 +211,7 @@ var stackWords = map[string]bool{
 	"react": true, "react.js": true, "node": true, "node.js": true, "nest.js": true,
 	"net": true, ".net": true, "java": true, "python": true, "go": true, "golang": true,
 	"kafka": true, "typescript": true, "javascript": true, "angular": true, "vue": true,
-	"php": true, "ruby": true, "c#": true, "aws": true, "ai": true, "ia": true,
+	"php": true, "ruby": true, "c#": true, "aws": true,
 }
 
 func looksLikeStack(s string) bool {

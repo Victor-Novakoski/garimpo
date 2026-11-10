@@ -10,6 +10,7 @@ import (
 
 	"github.com/victor-novakoski/garimpo/internal/collector"
 	"github.com/victor-novakoski/garimpo/internal/job"
+	"github.com/victor-novakoski/garimpo/internal/score"
 )
 
 type fakeCollector struct {
@@ -92,5 +93,42 @@ func TestPrintJobs(t *testing.T) {
 func TestParseCollectRejectsExtraArgs(t *testing.T) {
 	if _, err := parseCollect([]string{"nope"}, &bytes.Buffer{}); err == nil {
 		t.Fatal("want error")
+	}
+}
+
+func TestPrintResultsWhy(t *testing.T) {
+	results := []score.Result{{
+		Job:     job.Job{Title: "Dev Go", URL: "https://x/1"},
+		Points:  25,
+		Reasons: []score.Reason{{Points: 15, Text: "pede Go"}},
+	}}
+	var out bytes.Buffer
+	if err := printResults(&out, results, false, true); err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"25/70", "Dev Go", "+15 pede Go"} {
+		if !strings.Contains(out.String(), want) {
+			t.Errorf("output %q missing %q", out.String(), want)
+		}
+	}
+}
+
+func TestLoadProfile(t *testing.T) {
+	if _, ok, err := loadProfile(""); ok || err != nil {
+		t.Fatalf("no profile.yaml here: ok=%v err=%v", ok, err)
+	}
+	p, ok, err := loadProfile("../../profile.example.yaml")
+	if !ok || err != nil || p.Seniority != job.SeniorityMid {
+		t.Fatalf("example: ok=%v err=%v", ok, err)
+	}
+	if _, _, err := loadProfile("nope.yaml"); err == nil {
+		t.Fatal("missing explicit profile should fail")
+	}
+}
+
+func TestAtLeast(t *testing.T) {
+	rs := []score.Result{{Points: 60}, {Points: 30}}
+	if got := atLeast(rs, 50); len(got) != 1 || got[0].Points != 60 {
+		t.Fatalf("atLeast = %v", got)
 	}
 }

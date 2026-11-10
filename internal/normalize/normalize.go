@@ -35,9 +35,18 @@ var accents = map[rune]rune{
 // Words splits folded text into words, keeping symbols used in tech names
 // (c#, c++, node.js).
 func Words(s string) []string {
-	return strings.FieldsFunc(Fold(s), func(r rune) bool {
+	fields := strings.FieldsFunc(Fold(s), func(r rune) bool {
 		return !(unicode.IsLetter(r) || unicode.IsDigit(r) || strings.ContainsRune("#+.", r))
 	})
+	words := fields[:0]
+	for _, f := range fields {
+		// A dot ends sentences ("PostgreSQL.") but starts ".net".
+		f = strings.TrimRight(f, ".")
+		if f != "" && f != "." {
+			words = append(words, f)
+		}
+	}
+	return words
 }
 
 // rule maps words to a value.
@@ -60,12 +69,15 @@ var contractWords = []rule[job.Contract]{
 	{[]string{"clt"}, job.ContractCLT},
 }
 
-// seniorityWords lists Pleno first: a "Pleno/Sênior" range is reachable
-// for a mid-level person, so ranges resolve to their lowest common level.
+// seniorityWords lists leadership first, since "Staff Software Engineer II"
+// is a staff role whatever the number says. Pleno comes next: a
+// "Pleno/Sênior" or "JR/PL" range is reachable for a mid-level person, so
+// ranges resolve to Pleno.
 var seniorityWords = []rule[job.Seniority]{
-	{[]string{"pleno", "mid", "mid level", "ii", "iii"}, job.SeniorityMid},
-	{[]string{"senior", "sr", "especialista", "lead", "staff", "principal", "head", "iv"}, job.SenioritySenior},
-	{[]string{"junior", "jr", "trainee", "i"}, job.SeniorityJunior},
+	{[]string{"staff", "principal", "head", "lead", "tech lead", "manager", "gerente", "coordenador", "coordenadora"}, job.SeniorityLead},
+	{[]string{"pleno", "pl", "mid", "mid level", "ii", "iii"}, job.SeniorityMid},
+	{[]string{"senior", "sr", "especialista", "iv"}, job.SenioritySenior},
+	{[]string{"junior", "jr", "trainee", "associate", "i"}, job.SeniorityJunior},
 }
 
 // Classify fills WorkMode, Contract and Seniority when the source left them
@@ -106,7 +118,9 @@ func firstMatch[V any](rules []rule[V], texts ...string) V {
 // wordText is s as space-separated words with a space on each side, ready
 // for whole-word matching.
 func wordText(s string) string {
-	return " " + strings.Join(Words(s), " ") + " "
+	t := " " + strings.Join(Words(s), " ") + " "
+	// "PL/SQL" is a language, not Pleno.
+	return strings.ReplaceAll(t, " pl sql ", " plsql ")
 }
 
 func containsAny(text string, words []string) bool {

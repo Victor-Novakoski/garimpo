@@ -1,0 +1,37 @@
+# Perfil de exemplo do Garimpo. Copie para profile.yaml (que fica fora do
+# git) e ajuste. Valores: work_modes remote|hybrid|onsite,
+# contracts pj|clt|freelance|internship,
+# seniorities junior|mid|senior|lead (lead = staff, principal, head).
+
+name: Dev Full Stack de exemplo
+seniority: mid
+
+# O que pode passar no filtro duro. Vaga sem a informação sempre passa.
+accept:
+  work_modes: [remote]
+  contracts: [pj, freelance, clt]
+  seniorities: [junior, mid, senior]
+
+# O que vale nota cheia entre os aceitos.
+prefer:
+  work_modes: [remote]
+  contracts: [pj, freelance]
+
+# Some com a vaga se aparecer no título, na empresa ou nas etiquetas.
+avoid:
+  words: [logistica, transportadora, frete]
+  companies: []
+  locations: [mexico, argentina, chile, colombia, peru, uruguay, portugal]
+
+# Pontos por tecnologia (o total para em 40). Vale cheio no título ou nas
+# etiquetas, e metade quando só aparece na descrição.
+skills:
+  - {name: Go, aliases: [golang], points: 15}
+  - {name: React, aliases: [react.js, reactjs], points: 12}
+  - {name: TypeScript, aliases: [ts], points: 6}
+  - {name: PostgreSQL, aliases: [postgres, postgre], points: 5}
+  - {name: React Native, points: 4}
+  - {name: Node.js, aliases: [node, nodejs], points: 3}
+  - {name: Docker, points: 2}
+  - {name: Next.js, aliases: [nextjs], points: 2}
+  - {name: Angular, points: 2}
