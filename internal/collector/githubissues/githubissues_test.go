@@ -116,3 +116,15 @@ func TestCompanyFromTitle(t *testing.T) {
 		}
 	}
 }
+
+func TestUnescape(t *testing.T) {
+	for in, want := range map[string]string{
+		"AI &amp; Agents":     "AI & Agents",
+		"AI &amp;amp; Agents": "AI & Agents",
+		"Java & Angular":      "Java & Angular",
+	} {
+		if got := unescape(in); got != want {
+			t.Errorf("unescape(%q) = %q, want %q", in, got, want)
+		}
+	}
+}

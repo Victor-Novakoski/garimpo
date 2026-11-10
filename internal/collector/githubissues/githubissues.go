@@ -115,7 +115,7 @@ func (c Collector) pageURL(page int) string {
 }
 
 func (c Collector) toJob(is issue) job.Job {
-	title := strings.TrimSpace(html.UnescapeString(is.Title))
+	title := strings.TrimSpace(unescape(is.Title))
 	tags := make([]string, 0, len(is.Labels))
 	for _, l := range is.Labels {
 		tags = append(tags, l.Name)
@@ -241,6 +241,19 @@ func cleanCompany(s string) string {
 	folded := normalize.Fold(s)
 	if s == "" || notCompany[folded] || brazilianStates[folded] || looksLikeStack(s) {
 		return ""
+	}
+	return s
+}
+
+// unescape decodes HTML entities until none are left: some titles arrive
+// escaped twice ("AI &amp;amp; Agents").
+func unescape(s string) string {
+	for range 3 {
+		u := html.UnescapeString(s)
+		if u == s {
+			break
+		}
+		s = u
 	}
 	return s
 }
