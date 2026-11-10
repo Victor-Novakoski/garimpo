@@ -14,8 +14,8 @@ func TestFold(t *testing.T) {
 }
 
 func TestWords(t *testing.T) {
-	got := Words("[Remoto] Dev C#/Node.js - PJ")
-	want := []string{"remoto", "dev", "c#", "node.js", "pj"}
+	got := Words("[Remoto] Dev C#/Node.js e .NET - PJ. Fim.")
+	want := []string{"remoto", "dev", "c#", "node.js", "e", ".net", "pj", "fim"}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("Words = %q, want %q", got, want)
 	}

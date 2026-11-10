@@ -35,9 +35,18 @@ var accents = map[rune]rune{
 // Words splits folded text into words, keeping symbols used in tech names
 // (c#, c++, node.js).
 func Words(s string) []string {
-	return strings.FieldsFunc(Fold(s), func(r rune) bool {
+	fields := strings.FieldsFunc(Fold(s), func(r rune) bool {
 		return !(unicode.IsLetter(r) || unicode.IsDigit(r) || strings.ContainsRune("#+.", r))
 	})
+	words := fields[:0]
+	for _, f := range fields {
+		// A dot ends sentences ("PostgreSQL.") but starts ".net".
+		f = strings.TrimRight(f, ".")
+		if f != "" && f != "." {
+			words = append(words, f)
+		}
+	}
+	return words
 }
 
 // rule maps words to a value.
