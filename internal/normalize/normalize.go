@@ -141,3 +141,19 @@ func Dedupe(jobs []job.Job) []job.Job {
 	}
 	return out
 }
+
+// techWords mark a posting as a technology job. Checked against the title
+// and the source's labels or departments.
+var techWords = []string{
+	"engineer", "engineering", "engenheiro", "engenheira", "engenharia de software",
+	"developer", "desenvolvedor", "desenvolvedora", "dev", "programador", "programadora",
+	"software", "backend", "back end", "frontend", "front end", "fullstack", "full stack",
+	"mobile", "android", "ios", "devops", "sre", "qa", "tech lead", "arquiteto", "arquiteta",
+	"data", "dados", "machine learning", "golang", "go", "react", "node", "java", "python",
+}
+
+// IsTech reports whether the posting is a technology job. Community repos
+// only post tech jobs; company boards mix in sales, finance and the rest.
+func IsTech(j job.Job) bool {
+	return containsAny(wordText(j.Title+" "+strings.Join(j.Tags, " ")), techWords)
+}

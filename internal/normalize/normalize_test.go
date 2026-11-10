@@ -109,3 +109,23 @@ func TestDedupe(t *testing.T) {
 		t.Fatalf("Dedupe keys = %v, want %v", keys, want)
 	}
 }
+
+func TestIsTech(t *testing.T) {
+	tests := []struct {
+		job  job.Job
+		want bool
+	}{
+		{job.Job{Title: "SENIOR SOFTWARE ENGINEER - GOLANG"}, true},
+		{job.Job{Title: "Desenvolvedor(a) Backend Pleno"}, true},
+		{job.Job{Title: "Analista", Tags: []string{"Engineering"}}, true},
+		{job.Job{Title: "Back-end developer Node.js"}, true},
+		{job.Job{Title: "Agente Stone - Consultor(a) Comercial Externo | Toledo"}, false},
+		{job.Job{Title: "Account Executive - Hunter (Hibrido/SP)", Tags: []string{"Sales"}}, false},
+		{job.Job{Title: "Analista Financeiro"}, false},
+	}
+	for _, tt := range tests {
+		if got := IsTech(tt.job); got != tt.want {
+			t.Errorf("IsTech(%q) = %v, want %v", tt.job.Title, got, tt.want)
+		}
+	}
+}

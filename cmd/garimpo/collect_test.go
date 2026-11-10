@@ -31,17 +31,20 @@ func TestGatherClassifiesDedupesAndReports(t *testing.T) {
 		fakeCollector{name: "b", jobs: []job.Job{
 			{Source: "b", SourceID: "7", Company: "acme", Title: "[remoto] dev go pleno"},
 		}},
+		fakeCollector{name: "c", jobs: []job.Job{
+			{Source: "c", SourceID: "3", Company: "Acme", Title: "Analista Comercial"},
+		}},
 		fakeCollector{name: "broken", err: errors.New("fora do ar")},
 	}
 	var log bytes.Buffer
-	jobs := gather(context.Background(), cs, &log)
+	jobs := gather(context.Background(), cs, false, &log)
 	if len(jobs) != 1 {
 		t.Fatalf("got %d jobs, want 1", len(jobs))
 	}
 	if jobs[0].WorkMode != job.WorkModeRemote || jobs[0].Seniority != job.SeniorityMid {
 		t.Errorf("not classified: %+v", jobs[0])
 	}
-	for _, want := range []string{"broken", "erro: fora do ar", "1 repetidas removidas"} {
+	for _, want := range []string{"broken", "erro: fora do ar", "1 fora de tecnologia", "1 repetidas removidas"} {
 		if !strings.Contains(log.String(), want) {
 			t.Errorf("log %q missing %q", log.String(), want)
 		}

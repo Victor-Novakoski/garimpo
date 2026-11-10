@@ -24,16 +24,18 @@ type collectOptions struct {
 	gupy      bool
 	gupyTerms string
 	asJSON    bool
+	all       bool
 }
 
 func parseCollect(args []string, stderr io.Writer) (collectOptions, error) {
 	var o collectOptions
 	fs := flag.NewFlagSet("collect", flag.ContinueOnError)
 	fs.SetOutput(stderr)
-	fs.IntVar(&o.days, "days", 30, "só vagas do GitHub atualizadas nos últimos N dias")
+	fs.IntVar(&o.days, "days", 30, "só vagas do GitHub atualizadas nos últimos N dias (o Greenhouse traz o board inteiro)")
 	fs.BoolVar(&o.gupy, "gupy", false, "inclui a Gupy (só uso pessoal, veja docs/SOURCES.md)")
 	fs.StringVar(&o.gupyTerms, "gupy-terms", "golang,react", "termos de busca na Gupy, separados por vírgula")
 	fs.BoolVar(&o.asJSON, "json", false, "saída em JSON, uma vaga por linha")
+	fs.BoolVar(&o.all, "all", false, "mantém vagas fora de tecnologia (comercial, financeiro...)")
 	if err := fs.Parse(args); err != nil {
 		return o, err
 	}
@@ -71,10 +73,11 @@ func collectors(o collectOptions, now time.Time) []collector.Collector {
 }
 
 // gather runs the collectors, reports each source on stderr and returns
-// the classified, deduplicated jobs. A failing source never stops the rest.
-func gather(ctx context.Context, cs []collector.Collector, stderr io.Writer) []job.Job {
+// the classified, deduplicated jobs, only tech ones unless all is set. A
+// failing source never stops the rest.
+func gather(ctx context.Context, cs []collector.Collector, all bool, stderr io.Writer) []job.Job {
 	results, _ := collector.RunAll(ctx, cs)
-	var all []job.Job
+	var collected []job.Job
 	for _, r := range results {
 		if r.Err != nil {
 			fmt.Fprintf(stderr, "%-28s erro: %v\n", r.Source, r.Err)
@@ -82,11 +85,21 @@ func gather(ctx context.Context, cs []collector.Collector, stderr io.Writer) []j
 			fmt.Fprintf(stderr, "%-28s %d vagas\n", r.Source, len(r.Jobs))
 		}
 		for _, j := range r.Jobs {
-			all = append(all, normalize.Classify(j))
+			collected = append(collected, normalize.Classify(j))
 		}
 	}
-	deduped := normalize.Dedupe(all)
-	fmt.Fprintf(stderr, "total: %d vagas (%d repetidas removidas)\n", len(deduped), len(all)-len(deduped))
+	kept := collected
+	if !all {
+		kept = kept[:0:0]
+		for _, j := range collected {
+			if normalize.IsTech(j) {
+				kept = append(kept, j)
+			}
+		}
+	}
+	deduped := normalize.Dedupe(kept)
+	fmt.Fprintf(stderr, "total: %d vagas (%d fora de tecnologia, %d repetidas removidas)\n",
+		len(deduped), len(collected)-len(kept), len(kept)-len(deduped))
 	return deduped
 }
 
@@ -118,7 +131,7 @@ func runCollect(ctx context.Context, args []string, stdout, stderr io.Writer) in
 		}
 		return 2
 	}
-	jobs := gather(ctx, collectors(o, time.Now()), stderr)
+	jobs := gather(ctx, collectors(o, time.Now()), o.all, stderr)
 	if err := printJobs(stdout, jobs, o.asJSON); err != nil {
 		fmt.Fprintln(stderr, err)
 		return 1
