@@ -26,7 +26,8 @@ Guia para quem (pessoa ou IA) for mexer neste repositório. Leia antes de começ
 go test -race ./...   # testes
 go vet ./...          # análise estática
 gofmt -l .            # tem que sair vazio
-go run ./cmd/garimpo  # roda a CLI
+go run ./cmd/garimpo collect          # coleta e lista as vagas
+go run ./cmd/garimpo collect -gupy    # inclui a Gupy (só uso pessoal)
 ```
 
 ## Regras do repositório
@@ -50,8 +51,10 @@ go run ./cmd/garimpo  # roda a CLI
 ## Estrutura
 
 ```
-cmd/garimpo/        a CLI
-internal/job/       o modelo de vaga
-internal/collector/ a interface dos coletores e um coletor por fonte
-docs/               arquitetura, roadmap, decisões, fontes
+cmd/garimpo/          a CLI (garimpo collect)
+internal/job/         o modelo de vaga
+internal/httpx/       o cliente HTTP educado, único caminho para a rede
+internal/normalize/   classificação (modelo, contrato, nível) e duplicadas
+internal/collector/   a interface dos coletores e um pacote por fonte
+docs/                 arquitetura, roadmap, decisões, fontes
 ```
