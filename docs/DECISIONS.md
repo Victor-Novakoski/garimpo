@@ -4,6 +4,7 @@ Registro das escolhas e do porquê. A mais nova em cima.
 
 | Data | Decisão | Por quê |
 | --- | --- | --- |
+| 10/11/2026 | Depois da coleta real: título vence etiqueta e local; faixa "Pleno/Sênior" vira Pleno; só vagas de tech por padrão (`-all` mostra tudo); duplicadas pela mesma empresa com títulos parecidos | Na primeira coleta (499 vagas), issues tinham etiquetas "Remoto" e "Híbrido" juntas, só ~100 vagas do Greenhouse eram de tech e a mesma vaga aparecia em três repositórios com títulos um pouco diferentes |
 | 10/11/2026 | Greenhouse entra já na etapa 1, com Stone, QuintoAndar e Wildlife Studios | É API oficial e pública, e foi a fonte brasileira com mais vagas na pesquisa (Stone sozinha tinha 347) |
 | 10/11/2026 | Normalização sem dependência externa: acentos tirados por uma tabela própria | `golang.org/x/text` atual exige Go 1.26; a tabela cobre o português e mantém o módulo sem dependências |
 | 10/11/2026 | Gupy entra só para uso pessoal: coletor desligado por padrão, só link para a vaga original, nunca no demo público | É onde está a maior parte das vagas BR, mas os termos proíbem agregar o conteúdo. Assim o risco fica baixo e o projeto público segue limpo |
