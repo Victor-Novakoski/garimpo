@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -15,10 +16,11 @@ Uso:
   garimpo <comando>
 
 Comandos:
+  collect   coleta as vagas e lista no terminal
   version   mostra a versão
   help      mostra esta ajuda
 
-Em construção: a coleta chega na etapa 1 (veja docs/ROADMAP.md).
+Use "garimpo collect -h" para ver as opções da coleta.
 `
 
 func main() {
@@ -31,6 +33,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 0
 	}
 	switch args[0] {
+	case "collect":
+		return runCollect(context.Background(), args[1:], stdout, stderr)
 	case "version":
 		fmt.Fprintln(stdout, version)
 		return 0
