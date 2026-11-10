@@ -199,6 +199,9 @@ func mentions(text string, s profile.Skill) bool {
 
 func workMode(p profile.Profile, j job.Job) Reason {
 	switch {
+	case j.WorkMode == job.WorkModeUnknown && normalize.City(j) != "":
+		// "[Belo Horizonte, Brasil] Senior Software Engineer" is rarely remote.
+		return Reason{0, "modelo não informado e a vaga cita " + normalize.City(j) + " (pode ser presencial)"}
 	case j.WorkMode == job.WorkModeUnknown:
 		// Low on purpose: for a remote-only search an unmarked job is often
 		// on-site, and it should not outrank one that says remote.

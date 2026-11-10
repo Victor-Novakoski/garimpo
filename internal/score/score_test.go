@@ -158,3 +158,19 @@ func TestSkillsRequirementsAndURLs(t *testing.T) {
 		t.Errorf("React counted from a URL: %v", got)
 	}
 }
+
+func TestUnknownModeWithCity(t *testing.T) {
+	p := example(t)
+	r := workMode(p, job.Job{Title: "[Belo Horizonte, Brasil] Senior Software Engineer"})
+	if r.Points != 0 || !strings.Contains(r.Text, "Belo Horizonte") {
+		t.Errorf("city without mode = %v", r)
+	}
+	r = workMode(p, job.Job{Title: "Senior Software Engineer"})
+	if r.Points != WorkModeMax/5 {
+		t.Errorf("no city, no mode = %v", r)
+	}
+	r = workMode(p, job.Job{Title: "Dev Go - São Paulo", WorkMode: job.WorkModeRemote})
+	if r.Points != WorkModeMax {
+		t.Errorf("remote job naming a city = %v", r)
+	}
+}

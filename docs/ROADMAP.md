@@ -21,7 +21,7 @@ Seis etapas, um PR por etapa para a `develop`. Ao fim da etapa 2 o Garimpo já e
 - [x] Perfil YAML (e `profile.example.yaml`)
 - [x] Filtro duro e nota determinística com motivos (incluindo país: o Greenhouse traz vagas do México, Argentina e Chile)
 - [ ] Modelo de trabalho das vagas do QuintoAndar e da Wildlife, que hoje saem sem modelo
-- [ ] Vaga sem modelo mas com cidade no título ou no local ("[Belo Horizonte]") não deve passar como se fosse remota
+- [x] Vaga sem modelo mas com cidade no título ou no local ("[Belo Horizonte]") não deve passar como se fosse remota
 - [ ] Nota com IA atrás da interface `Scorer`
 - [ ] Job diário no GitHub Actions + resumo no Telegram
 
