@@ -17,7 +17,12 @@ import (
 	"github.com/victor-novakoski/garimpo/internal/collector/gupy"
 	"github.com/victor-novakoski/garimpo/internal/job"
 	"github.com/victor-novakoski/garimpo/internal/normalize"
+	"github.com/victor-novakoski/garimpo/internal/profile"
+	"github.com/victor-novakoski/garimpo/internal/score"
 )
+
+// defaultProfile is read when -profile is not given and the file exists.
+const defaultProfile = "profile.yaml"
 
 type collectOptions struct {
 	days      int
@@ -25,6 +30,9 @@ type collectOptions struct {
 	gupyTerms string
 	asJSON    bool
 	all       bool
+	profile   string
+	minPoints int
+	why       bool
 }
 
 func parseCollect(args []string, stderr io.Writer) (collectOptions, error) {
@@ -36,6 +44,9 @@ func parseCollect(args []string, stderr io.Writer) (collectOptions, error) {
 	fs.StringVar(&o.gupyTerms, "gupy-terms", "golang,react", "termos de busca na Gupy, separados por vírgula")
 	fs.BoolVar(&o.asJSON, "json", false, "saída em JSON, uma vaga por linha")
 	fs.BoolVar(&o.all, "all", false, "mantém vagas fora de tecnologia (comercial, financeiro...)")
+	fs.StringVar(&o.profile, "profile", "", "perfil para filtrar e dar nota (padrão: profile.yaml, se existir)")
+	fs.IntVar(&o.minPoints, "min", 0, "só mostra vagas com pelo menos esta nota")
+	fs.BoolVar(&o.why, "why", false, "mostra o motivo de cada ponto da nota")
 	if err := fs.Parse(args); err != nil {
 		return o, err
 	}
@@ -131,12 +142,78 @@ func runCollect(ctx context.Context, args []string, stdout, stderr io.Writer) in
 		}
 		return 2
 	}
+	p, hasProfile, err := loadProfile(o.profile)
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+		return 2
+	}
 	jobs := gather(ctx, collectors(o, time.Now()), o.all, stderr)
-	if err := printJobs(stdout, jobs, o.asJSON); err != nil {
+	if !hasProfile {
+		fmt.Fprintf(stderr, "sem perfil: listando sem nota (copie profile.example.yaml para %s)\n", defaultProfile)
+		err = printJobs(stdout, jobs, o.asJSON)
+	} else {
+		results, dropped := score.Rank(p, jobs)
+		results = atLeast(results, o.minPoints)
+		fmt.Fprintf(stderr, "perfil: %d vagas passaram, %d cortadas pelo filtro\n", len(results), dropped)
+		err = printResults(stdout, results, o.asJSON, o.why)
+	}
+	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return 1
 	}
 	return 0
+}
+
+// loadProfile reads the profile from path, or from defaultProfile when
+// path is empty and that file exists. No profile is not an error.
+func loadProfile(path string) (profile.Profile, bool, error) {
+	if path == "" {
+		if _, err := os.Stat(defaultProfile); err != nil {
+			return profile.Profile{}, false, nil
+		}
+		path = defaultProfile
+	}
+	p, err := profile.Load(path)
+	if err != nil {
+		return p, false, err
+	}
+	return p, true, nil
+}
+
+func atLeast(results []score.Result, minPoints int) []score.Result {
+	out := results[:0:0]
+	for _, r := range results {
+		if r.Points >= minPoints {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
+func printResults(w io.Writer, results []score.Result, asJSON, why bool) error {
+	if asJSON {
+		enc := json.NewEncoder(w)
+		for _, r := range results {
+			if err := enc.Encode(r); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
+	fmt.Fprintf(tw, "NOTA\tVAGA\tEMPRESA\tMODELO\tCONTRATO\tNÍVEL\tLINK\n")
+	for _, r := range results {
+		j := r.Job
+		fmt.Fprintf(tw, "%d/%d\t%s\t%s\t%s\t%s\t%s\t%s\n",
+			r.Points, score.Max, cut(j.Title, 60), dash(j.Company), dash(string(j.WorkMode)),
+			dash(string(j.Contract)), dash(string(j.Seniority)), j.URL)
+		if why {
+			for _, reason := range r.Reasons {
+				fmt.Fprintf(tw, "\t  %s\t\t\t\t\t\t\n", reason)
+			}
+		}
+	}
+	return tw.Flush()
 }
 
 func cut(s string, n int) string {
