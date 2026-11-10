@@ -37,4 +37,15 @@ Os cortes são o ponto de partida e mudam depois de duas semanas de uso.
 
 ## Perfil
 
-O perfil (skills com peso, o que evitar, preferências) fica num YAML fora do repositório. No Actions ele entra por segredo. O repositório traz um `profile.example.yaml` a partir da etapa 2.
+O perfil (skills com pontos, o que aceitar, o que preferir, o que evitar) fica num `profile.yaml` fora do repositório. No Actions ele entra por segredo. O formato está em [`profile.example.yaml`](../profile.example.yaml); campo desconhecido é erro, para um erro de digitação nunca desligar uma regra calado.
+
+## Nota determinística (0 a 70)
+
+| Parte | Pontos | Como |
+| --- | --- | --- |
+| Tecnologias | até 40 | soma dos pontos de cada skill do perfil citada no título, etiquetas ou descrição |
+| Modelo | 10 / 4 / 5 | preferido / aceito / não informado |
+| Contrato | 10 / 4 / 5 | preferido / aceito / não informado |
+| Nível | 10 / 6 / 0 / 5 | igual / um acima ou abaixo / distante / não informado |
+
+Vaga sem a informação passa no filtro e ganha metade dos pontos daquela parte: melhor ver e descartar do que perder uma vaga boa mal etiquetada.

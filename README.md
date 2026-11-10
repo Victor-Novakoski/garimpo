@@ -25,6 +25,13 @@ go run ./cmd/garimpo collect -json    # uma vaga por linha, em JSON
 go test ./...
 ```
 
+Para filtrar e dar nota, copie `profile.example.yaml` para `profile.yaml` (fica fora do git) e ajuste. Com ele, o `collect` corta o que não serve e ordena pela nota:
+
+```bash
+go run ./cmd/garimpo collect -why     # mostra o motivo de cada ponto
+go run ./cmd/garimpo collect -min 45  # só vagas com nota 45 ou mais
+```
+
 Com `GITHUB_TOKEN` definido, a coleta do GitHub usa o limite maior da API.
 
 ## Por que existe
