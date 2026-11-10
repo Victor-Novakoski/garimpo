@@ -1,0 +1,16 @@
+# binários
+/garimpo
+/bin/
+*.exe
+
+# segredos e dados pessoais
+.env
+.env.*
+!.env.example
+profile.yaml
+data/private/
+
+# editor
+.idea/
+.vscode/
+.DS_Store
