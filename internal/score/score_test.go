@@ -42,11 +42,11 @@ func TestFilter(t *testing.T) {
 func TestScore(t *testing.T) {
 	p := example(t)
 	best := job.Job{
-		Title:       "Dev Full Stack Pleno",
-		Description: "Stack: Golang, React, TypeScript e PostgreSQL. Docker é um plus.",
-		WorkMode:    job.WorkModeRemote,
-		Contract:    job.ContractPJ,
-		Seniority:   job.SeniorityMid,
+		Title:     "Dev Full Stack Pleno - Golang, React, TypeScript, PostgreSQL",
+		Tags:      []string{"Docker"},
+		WorkMode:  job.WorkModeRemote,
+		Contract:  job.ContractPJ,
+		Seniority: job.SeniorityMid,
 	}
 	r := Score(p, best)
 	// Go 15 + React 12 + TypeScript 6 + PostgreSQL 5 + Docker 2 = 40, then 10+10+10.
@@ -56,9 +56,9 @@ func TestScore(t *testing.T) {
 
 	weak := job.Job{Title: "Dev Java Sênior", Contract: job.ContractCLT, Seniority: job.SenioritySenior}
 	r = Score(p, weak)
-	// no skills 0 + unknown mode 5 + clt 4 + senior 6 = 15
-	if r.Points != 15 {
-		t.Fatalf("Points = %d, want 15; reasons %v", r.Points, r.Reasons)
+	// no skills 0 + unknown mode 2 + clt 4 + senior 6 = 12
+	if r.Points != 12 {
+		t.Fatalf("Points = %d, want 12; reasons %v", r.Points, r.Reasons)
 	}
 	if r.Reasons[0].Text != "nenhuma tecnologia do perfil" {
 		t.Errorf("first reason = %v", r.Reasons[0])
@@ -68,7 +68,7 @@ func TestScore(t *testing.T) {
 func TestSkillsCap(t *testing.T) {
 	p := example(t)
 	p.Skills = append(p.Skills, profile.Skill{Name: "Kafka", Points: 30})
-	j := job.Job{Title: "Dev", Description: "go react typescript postgres kafka"}
+	j := job.Job{Title: "Dev go react typescript postgres kafka"}
 	total := 0
 	for _, r := range skills(p, j) {
 		total += r.Points
@@ -88,5 +88,39 @@ func TestRank(t *testing.T) {
 	kept, dropped := Rank(p, jobs)
 	if dropped != 1 || len(kept) != 2 || kept[0].Job.SourceID != "2" {
 		t.Fatalf("kept = %v, dropped = %d", kept, dropped)
+	}
+}
+
+func TestSkillsDescriptionAndFalseFriends(t *testing.T) {
+	p := example(t)
+	points := func(j job.Job) map[string]int {
+		got := map[string]int{}
+		for _, r := range skills(p, j) {
+			got[r.Text] = r.Points
+		}
+		return got
+	}
+	got := points(job.Job{Title: "Software Engineer", Description: "Our tech stack: java, kotlin, node.js, go, python, react"})
+	if got["cita Go na descrição"] != 8 || got["cita React na descrição"] != 6 {
+		t.Errorf("description-only = %v, want half points", got)
+	}
+	got = points(job.Job{Title: "Especialista GTM", Description: "a engenharia por trás do nosso go-to-market"})
+	if _, ok := got["cita Go na descrição"]; ok {
+		t.Errorf("go-to-market counted as Go: %v", got)
+	}
+	got = points(job.Job{Title: "Mobile Developer React Native"})
+	if _, ok := got["pede React"]; ok {
+		t.Errorf("React Native counted as React: %v", got)
+	}
+	got = points(job.Job{Title: "Dev React e React Native"})
+	if got["pede React"] != 12 {
+		t.Errorf("React next to React Native = %v", got)
+	}
+}
+
+func TestLeadIsDropped(t *testing.T) {
+	p := example(t)
+	if got := Filter(p, job.Job{Title: "Head of Engineering", Seniority: job.SeniorityLead}); got == "" {
+		t.Fatal("lead role passed a profile that does not accept it")
 	}
 }

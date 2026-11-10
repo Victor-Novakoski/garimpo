@@ -88,29 +88,30 @@ func Score(p profile.Profile, j job.Job) Result {
 }
 
 // skills gives each profile skill the posting asks for its points, capped
-// at SkillMax. The description counts: it is where the stack is listed.
+// at SkillMax. A skill in the title or labels earns full points; one found
+// only in the description earns half, since descriptions often carry a
+// company-wide stack paragraph ("our stack: java, kotlin, go, react...").
 func skills(p profile.Profile, j job.Job) []Reason {
-	text := " " + strings.Join(normalize.Words(j.Title+" "+strings.Join(j.Tags, " ")+" "+j.Description), " ") + " "
+	head := skillText(j.Title + " " + strings.Join(j.Tags, " "))
+	body := skillText(j.Description)
 	var reasons []Reason
 	total := 0
 	for _, s := range p.Skills {
-		names := append([]string{s.Name}, s.Aliases...)
-		found := false
-		for _, n := range names {
-			if strings.Contains(text, " "+strings.Join(normalize.Words(n), " ")+" ") {
-				found = true
-				break
-			}
-		}
-		if !found {
+		pts, where := 0, ""
+		switch {
+		case mentions(head, s):
+			pts, where = s.Points, "pede "+s.Name
+		case mentions(body, s):
+			pts, where = (s.Points+1)/2, "cita "+s.Name+" na descrição"
+		default:
 			continue
 		}
-		pts := min(s.Points, SkillMax-total)
+		pts = min(pts, SkillMax-total)
 		if pts <= 0 {
 			break
 		}
 		total += pts
-		reasons = append(reasons, Reason{pts, "pede " + s.Name})
+		reasons = append(reasons, Reason{pts, where})
 	}
 	if len(reasons) == 0 {
 		reasons = append(reasons, Reason{0, "nenhuma tecnologia do perfil"})
@@ -118,10 +119,34 @@ func skills(p profile.Profile, j job.Job) []Reason {
 	return reasons
 }
 
+// notSkills are phrases that contain a skill name but mean something else.
+var notSkills = strings.NewReplacer(
+	" go to market ", " gtm ",
+	" react native ", " reactnative ", // mobile; add "React Native" as its own skill
+)
+
+func skillText(s string) string {
+	t := " " + strings.Join(normalize.Words(s), " ") + " "
+	// Replace twice so overlapping matches ("go to market go to market") go too.
+	return notSkills.Replace(notSkills.Replace(t))
+}
+
+func mentions(text string, s profile.Skill) bool {
+	for _, n := range append([]string{s.Name}, s.Aliases...) {
+		w := notSkills.Replace(" " + strings.Join(normalize.Words(n), " ") + " ")
+		if strings.Contains(text, w) {
+			return true
+		}
+	}
+	return false
+}
+
 func workMode(p profile.Profile, j job.Job) Reason {
 	switch {
 	case j.WorkMode == job.WorkModeUnknown:
-		return Reason{WorkModeMax / 2, "modelo de trabalho não informado"}
+		// Low on purpose: for a remote-only search an unmarked job is often
+		// on-site, and it should not outrank one that says remote.
+		return Reason{WorkModeMax / 5, "modelo de trabalho não informado"}
 	case slices.Contains(p.Prefer.WorkModes, j.WorkMode):
 		return Reason{WorkModeMax, "modelo " + string(j.WorkMode)}
 	default:
@@ -144,6 +169,7 @@ var levelOrder = map[job.Seniority]int{
 	job.SeniorityJunior: 0,
 	job.SeniorityMid:    1,
 	job.SenioritySenior: 2,
+	job.SeniorityLead:   3,
 }
 
 func seniority(p profile.Profile, j job.Job) Reason {
