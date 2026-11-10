@@ -4,6 +4,7 @@ Registro das escolhas e do porquê. A mais nova em cima.
 
 | Data | Decisão | Por quê |
 | --- | --- | --- |
+| 10/11/2026 | Gupy entra só para uso pessoal: coletor desligado por padrão, só link para a vaga original, nunca no demo público | É onde está a maior parte das vagas BR, mas os termos proíbem agregar o conteúdo. Assim o risco fica baixo e o projeto público segue limpo |
 | 10/11/2026 | IA atrás de uma interface `Scorer`, com duas implementações: API do Claude (Haiku) e `claude -p` local | A API custa uns R$ 5 a 10 por mês; o modo local usa o plano do Claude que o Victor já paga. Trocar não mexe no resto |
 | 10/11/2026 | Nota híbrida: até 70 pontos em código e até 30 da IA, com filtro duro antes | Nota explicável e barata: a IA só vê o que passou no filtro e não consegue furar regra. Ideia tirada da friday, do Carlos Junio |
 | 10/11/2026 | Foco no Brasil: repositórios de vagas no GitHub e Gupy primeiro; Greenhouse e Lever depois | O Victor busca vaga brasileira por enquanto. A friday já cobre bem o lado internacional |
