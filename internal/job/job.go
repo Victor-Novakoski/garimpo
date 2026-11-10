@@ -32,6 +32,7 @@ const (
 	SeniorityJunior  Seniority = "junior"
 	SeniorityMid     Seniority = "mid"
 	SenioritySenior  Seniority = "senior"
+	SeniorityLead    Seniority = "lead" // staff, principal, head, tech lead
 )
 
 // Job is one posting, normalized from any source.

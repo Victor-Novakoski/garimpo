@@ -78,9 +78,24 @@ func TestClassify(t *testing.T) {
 			want: job.Job{Seniority: job.SeniorityJunior},
 		},
 		{
-			name: "head is senior",
+			name: "head is lead",
 			in:   job.Job{Title: "Head of Engineering"},
-			want: job.Job{Seniority: job.SenioritySenior},
+			want: job.Job{Seniority: job.SeniorityLead},
+		},
+		{
+			name: "staff wins over the roman numeral",
+			in:   job.Job{Title: "QuintoAndar | Staff Software Engineer II"},
+			want: job.Job{Seniority: job.SeniorityLead},
+		},
+		{
+			name: "JR/PL range is pleno",
+			in:   job.Job{Title: "[SI/LGPD] Security Engineer JR/PL"},
+			want: job.Job{Seniority: job.SeniorityMid},
+		},
+		{
+			name: "associate is junior",
+			in:   job.Job{Title: "Associate Data Engineer"},
+			want: job.Job{Seniority: job.SeniorityJunior},
 		},
 		{
 			name: "pl/sql is not pleno",

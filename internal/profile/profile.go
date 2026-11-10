@@ -105,7 +105,7 @@ func (p Profile) validate() error {
 	}
 	for _, s := range append([]job.Seniority{p.Seniority}, p.Accept.Seniorities...) {
 		switch s {
-		case job.SeniorityJunior, job.SeniorityMid, job.SenioritySenior:
+		case job.SeniorityJunior, job.SeniorityMid, job.SenioritySenior, job.SeniorityLead:
 		default:
 			errs = append(errs, fmt.Errorf("unknown seniority %q", s))
 		}
