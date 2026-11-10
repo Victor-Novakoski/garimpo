@@ -96,11 +96,19 @@ func TestCollectError(t *testing.T) {
 
 func TestCompanyFromTitle(t *testing.T) {
 	tests := map[string]string{
-		"[Remoto] Dev Go na Acme":            "Acme",
-		"Backend Sênior @ Banco X - Híbrido": "Banco X",
-		"[PJ] Dev React | Loja Y (Remoto)":   "Loja Y",
-		"Desenvolvedor Fullstack Pleno":      "",
-		"[Remoto][PJ] Engenheiro no Grupo Z": "Grupo Z",
+		"[Remoto] Dev Go na Acme":                                                        "Acme",
+		"Backend Sênior @ Banco X - Híbrido":                                             "Banco X",
+		"Frontend Engineer @Botcity":                                                     "Botcity",
+		"[PJ] Dev React | Loja Y (Remoto)":                                               "Loja Y",
+		"[Remoto][PJ] Engenheiro no Grupo Z":                                             "Grupo Z",
+		"[Remoto] Dev java junior - DB1":                                                 "DB1",
+		"Developer ASP.NET/C# Junior/Pleno - Dimensa":                                    "Dimensa",
+		"Back-end developer Net- (Strider)":                                              "Strider",
+		"Desenvolvedor(a) Full Stack Sênior — AI & Agentes | WeatherWise | 4 dias / 32h": "WeatherWise",
+		"[Híbrido - São Paulo] Senior Full Stack Developer | Aurum | US$ 5k":             "Aurum",
+		"Dev Backend - Evertec 🧡":                                                        "Evertec",
+		"Dev Go Pleno - Remoto":                                                          "",
+		"Desenvolvedor Fullstack Pleno":                                                  "",
 	}
 	for title, want := range tests {
 		if got := companyFromTitle(title); got != want {
