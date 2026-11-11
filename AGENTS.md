@@ -9,6 +9,7 @@ Guia para quem (pessoa ou IA) for mexer neste repositório. Leia antes de começ
 É um projeto de portfólio do Victor Novakoski (dev full stack, Go + React), e também a ferramenta que ele usa para procurar o segundo emprego: pleno, remoto, PJ ou meio período, fora de logística.
 
 - Arquitetura: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- Fluxo da vaga e estados do funil: [docs/FLOW.md](docs/FLOW.md). A CLI, a API e o painel seguem este desenho
 - Etapas e tarefas: [docs/ROADMAP.md](docs/ROADMAP.md)
 - Decisões e o porquê: [docs/DECISIONS.md](docs/DECISIONS.md)
 - Fontes de vagas: [docs/SOURCES.md](docs/SOURCES.md)
