@@ -43,36 +43,50 @@ type collectOptions struct {
 	state     string
 }
 
-func parseCollect(args []string, stderr io.Writer) (collectOptions, error) {
-	var o collectOptions
-	fs := flag.NewFlagSet("collect", flag.ContinueOnError)
-	fs.SetOutput(stderr)
+// register declares the flags that say what a collection does. They are the
+// same for collect and for serve, whose button runs a collection.
+func (o *collectOptions) register(fs *flag.FlagSet) {
 	fs.IntVar(&o.days, "days", 30, "só vagas do GitHub atualizadas nos últimos N dias (o Greenhouse traz o board inteiro)")
 	fs.BoolVar(&o.gupy, "gupy", false, "inclui a Gupy (só uso pessoal, veja docs/SOURCES.md)")
 	fs.StringVar(&o.gupyTerms, "gupy-terms", "golang,react", "termos de busca na Gupy, separados por vírgula")
-	fs.BoolVar(&o.asJSON, "json", false, "saída em JSON, uma vaga por linha")
 	fs.BoolVar(&o.all, "all", false, "mantém vagas fora de tecnologia (comercial, financeiro...)")
 	fs.StringVar(&o.profile, "profile", "", "perfil para filtrar e dar nota (padrão: profile.yaml, se existir)")
-	fs.IntVar(&o.minPoints, "min", 0, "só mostra vagas com pelo menos esta nota")
 	fs.StringVar(&o.ai, "ai", "", "soma a nota da IA (até 30): \"local\" usa o claude -p da máquina, \"api\" usa a API do Claude")
 	fs.StringVar(&o.aiModel, "ai-model", "", "modelo da IA (padrão: haiku no local, claude-haiku-5-5 na API)")
 	fs.IntVar(&o.aiTop, "ai-top", 20, "quantas vagas, das melhores pela nota das regras, a IA avalia")
 	fs.StringVar(&o.aiCache, "ai-cache", "", "arquivo de cache das notas da IA (\"off\" desliga; padrão: pasta de cache do usuário)")
-	fs.BoolVar(&o.why, "why", false, "mostra o motivo de cada ponto da nota")
 	stateFlag(fs, &o.state)
-	if err := fs.Parse(args); err != nil {
-		return o, err
-	}
+}
+
+// check validates what the flags cannot.
+func (o collectOptions) check(fs *flag.FlagSet) error {
 	if fs.NArg() > 0 {
-		return o, fmt.Errorf("argumento inesperado: %q", fs.Arg(0))
+		return fmt.Errorf("argumento inesperado: %q", fs.Arg(0))
 	}
 	switch o.ai {
 	case "", "local", "api":
 	default:
-		return o, fmt.Errorf("-ai: valor desconhecido %q (use local ou api)", o.ai)
+		return fmt.Errorf("-ai: valor desconhecido %q (use local ou api)", o.ai)
 	}
-	return o, nil
+	return nil
 }
+
+func parseCollect(args []string, stderr io.Writer) (collectOptions, error) {
+	var o collectOptions
+	fs := flag.NewFlagSet("collect", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+	o.register(fs)
+	fs.BoolVar(&o.asJSON, "json", false, "saída em JSON, uma vaga por linha")
+	fs.IntVar(&o.minPoints, "min", 0, "só mostra vagas com pelo menos esta nota")
+	fs.BoolVar(&o.why, "why", false, "mostra o motivo de cada ponto da nota")
+	if err := fs.Parse(args); err != nil {
+		return o, err
+	}
+	return o, o.check(fs)
+}
+
+// sources builds the collectors of a run; tests replace it.
+var sources = collectors
 
 // collectors builds the source list from the options.
 func collectors(o collectOptions, now time.Time) []collector.Collector {
@@ -184,31 +198,18 @@ func runCollect(ctx context.Context, args []string, stdout, stderr io.Writer) in
 		return 2
 	}
 	at := now()
-	g := gather(ctx, collectors(o, at), o.all, stderr)
+	g := gather(ctx, sources(o, at), o.all, stderr)
 	if !hasProfile {
 		fmt.Fprintf(stderr, "sem perfil: listando sem nota (copie profile.example.yaml para %s)\n", defaultProfile)
 		err = printJobs(stdout, g.jobs, o.asJSON)
 	} else {
-		results, dropped := score.Rank(p, g.jobs)
-		fmt.Fprintf(stderr, "perfil: %d vagas passaram, %d cortadas pelo filtro\n", len(results), dropped)
 		store, done, serr := tracker.Open(ctx, o.state)
 		if serr != nil {
 			fmt.Fprintln(stderr, serr)
 			return 1
 		}
 		defer done()
-		// Postings already applied to or discarded leave before the AI
-		// step, so it never spends time on them.
-		visible, hidden, serr := splitByStatus(store, results)
-		if serr != nil {
-			fmt.Fprintln(stderr, serr)
-			return 1
-		}
-		ranked, maxPoints := withoutAI(visible), score.Max
-		if o.ai != "" {
-			ranked, maxPoints = assess(ctx, o, p, visible, stderr), ai.MaxTotal
-		}
-		rows, serr := track(store, g, at, ranked, hidden, o.ai != "", stderr)
+		rows, maxPoints, serr := rank(ctx, o, p, store, g, at, stderr)
 		if serr != nil {
 			fmt.Fprintln(stderr, serr)
 			return 1
@@ -220,6 +221,27 @@ func runCollect(ctx context.Context, args []string, stdout, stderr io.Writer) in
 		return 1
 	}
 	return 0
+}
+
+// rank is what a collection does after gathering: filter and score by the
+// profile, add the AI part when asked, and record the run in the store. It
+// returns the daily list and the top of the scale. The only error is the
+// store failing.
+func rank(ctx context.Context, o collectOptions, p profile.Profile, store tracker.Store, g gathered, at time.Time, stderr io.Writer) ([]row, int, error) {
+	results, dropped := score.Rank(p, g.jobs)
+	fmt.Fprintf(stderr, "perfil: %d vagas passaram, %d cortadas pelo filtro\n", len(results), dropped)
+	// Postings already applied to or discarded leave before the AI step,
+	// so it never spends time on them.
+	visible, hidden, err := splitByStatus(store, results)
+	if err != nil {
+		return nil, 0, err
+	}
+	ranked, maxPoints := withoutAI(visible), score.Max
+	if o.ai != "" {
+		ranked, maxPoints = assess(ctx, o, p, visible, stderr), ai.MaxTotal
+	}
+	rows, err := track(store, g, at, ranked, hidden, o.ai != "", stderr)
+	return rows, maxPoints, err
 }
 
 func withoutAI(results []score.Result) []ai.Ranked {

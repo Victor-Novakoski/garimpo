@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 var version = "dev"
@@ -17,6 +19,7 @@ Uso:
 
 Comandos:
   collect   coleta as vagas e mostra a lista do dia
+  serve     abre o painel no navegador, só nesta máquina: garimpo serve
   mark      marca o que você fez com uma vaga: garimpo mark 12 apliquei
   note      anota algo numa vaga: garimpo note 12 "falei com a Ana"
   list      mostra as vagas que você marcou (vou aplicar, apliquei, entrevista)
@@ -26,7 +29,8 @@ Comandos:
   version   mostra a versão
   help      mostra esta ajuda
 
-Use "garimpo collect -h" para ver as opções da coleta.
+Use "garimpo collect -h" para ver as opções da coleta, e "garimpo serve -h"
+para as do painel.
 
 O que você marca fica num arquivo na sua máquina. Com a variável
 GARIMPO_DATABASE_URL definida, fica no Postgres (veja o README).
@@ -44,6 +48,10 @@ func run(args []string, stdout, stderr io.Writer) int {
 	switch args[0] {
 	case "collect":
 		return runCollect(context.Background(), args[1:], stdout, stderr)
+	case "serve":
+		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer stop()
+		return runServe(ctx, args[1:], stderr)
 	case "mark":
 		return runMark(context.Background(), args[1:], stdout, stderr)
 	case "note":
