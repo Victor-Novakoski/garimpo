@@ -20,21 +20,7 @@ import (
 // list when the person marks it.
 
 func stateFlag(fs *flag.FlagSet, target *string) {
-	fs.StringVar(target, "state", "", "arquivo com o que você marcou em cada vaga (\"off\" desliga; padrão: pasta de configuração do usuário)")
-}
-
-// openStore returns the tracker store, or nil when tracking is off.
-func openStore(path string) (tracker.Store, error) {
-	if path == "off" {
-		return nil, nil
-	}
-	if path == "" {
-		var err error
-		if path, err = tracker.DefaultPath(); err != nil {
-			return nil, fmt.Errorf("não achei a pasta de configuração (use -state): %w", err)
-		}
-	}
-	return tracker.OpenFile(path), nil
+	fs.StringVar(target, "state", "", tracker.StateHelp)
 }
 
 // row is one line of the daily list: the scored job and what the tracker
@@ -141,25 +127,26 @@ func boolInt(b bool) int {
 var now = time.Now
 
 // trackArgs parses the flags shared by mark, note, list and show and
-// returns the store and the remaining arguments.
-func trackArgs(name string, args []string, stderr io.Writer) (tracker.Store, []string, int) {
+// returns the store, what closes it and the remaining arguments. A nil
+// store means the command must exit with the code.
+func trackArgs(ctx context.Context, name string, args []string, stderr io.Writer) (tracker.Store, func(), []string, int) {
 	var state string
 	fs := flag.NewFlagSet(name, flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	stateFlag(fs, &state)
 	if err := fs.Parse(args); err != nil {
-		return nil, nil, 2
+		return nil, nil, nil, 2
 	}
-	store, err := openStore(state)
+	if state == "off" {
+		fmt.Fprintln(stderr, "-state off não faz sentido aqui: este comando lê o que você marcou")
+		return nil, nil, nil, 2
+	}
+	store, done, err := tracker.Open(ctx, state)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
-		return nil, nil, 1
+		return nil, nil, nil, 1
 	}
-	if store == nil {
-		fmt.Fprintln(stderr, "-state off não faz sentido aqui: este comando lê o que você marcou")
-		return nil, nil, 2
-	}
-	return store, fs.Args(), 0
+	return store, done, fs.Args(), 0
 }
 
 func parseNumber(s string) (int, error) {
@@ -170,11 +157,12 @@ func parseNumber(s string) (int, error) {
 	return n, nil
 }
 
-func runMark(_ context.Context, args []string, stdout, stderr io.Writer) int {
-	store, rest, code := trackArgs("mark", args, stderr)
+func runMark(ctx context.Context, args []string, stdout, stderr io.Writer) int {
+	store, done, rest, code := trackArgs(ctx, "mark", args, stderr)
 	if store == nil {
 		return code
 	}
+	defer done()
 	if len(rest) < 2 {
 		fmt.Fprintln(stderr, "uso: garimpo mark <número> <estado>   (nova, vou aplicar, apliquei, entrevista, descartada)")
 		return 2
@@ -198,11 +186,12 @@ func runMark(_ context.Context, args []string, stdout, stderr io.Writer) int {
 	return 0
 }
 
-func runNote(_ context.Context, args []string, stdout, stderr io.Writer) int {
-	store, rest, code := trackArgs("note", args, stderr)
+func runNote(ctx context.Context, args []string, stdout, stderr io.Writer) int {
+	store, done, rest, code := trackArgs(ctx, "note", args, stderr)
 	if store == nil {
 		return code
 	}
+	defer done()
 	if len(rest) < 1 {
 		fmt.Fprintln(stderr, `uso: garimpo note <número> <texto>   (sem texto, apaga a anotação)`)
 		return 2
@@ -234,11 +223,12 @@ func entryState(e tracker.Entry) string {
 
 // runList prints what was marked, without collecting. With no status it
 // shows the follow-up: vou aplicar, apliquei and entrevista.
-func runList(_ context.Context, args []string, stdout, stderr io.Writer) int {
-	store, rest, code := trackArgs("list", args, stderr)
+func runList(ctx context.Context, args []string, stdout, stderr io.Writer) int {
+	store, done, rest, code := trackArgs(ctx, "list", args, stderr)
 	if store == nil {
 		return code
 	}
+	defer done()
 	want := []tracker.Status{tracker.StatusInterview, tracker.StatusApplied, tracker.StatusSaved}
 	if len(rest) > 0 {
 		if word := strings.Join(rest, " "); word == "tudo" {
@@ -274,11 +264,12 @@ func runList(_ context.Context, args []string, stdout, stderr io.Writer) int {
 	return boolInt(tw.Flush() != nil)
 }
 
-func runShow(_ context.Context, args []string, stdout, stderr io.Writer) int {
-	store, rest, code := trackArgs("show", args, stderr)
+func runShow(ctx context.Context, args []string, stdout, stderr io.Writer) int {
+	store, done, rest, code := trackArgs(ctx, "show", args, stderr)
 	if store == nil {
 		return code
 	}
+	defer done()
 	if len(rest) != 1 {
 		fmt.Fprintln(stderr, "uso: garimpo show <número>")
 		return 2

@@ -21,6 +21,7 @@ import (
 	"github.com/victor-novakoski/garimpo/internal/normalize"
 	"github.com/victor-novakoski/garimpo/internal/profile"
 	"github.com/victor-novakoski/garimpo/internal/score"
+	"github.com/victor-novakoski/garimpo/internal/tracker"
 )
 
 // defaultProfile is read when -profile is not given and the file exists.
@@ -190,11 +191,12 @@ func runCollect(ctx context.Context, args []string, stdout, stderr io.Writer) in
 	} else {
 		results, dropped := score.Rank(p, g.jobs)
 		fmt.Fprintf(stderr, "perfil: %d vagas passaram, %d cortadas pelo filtro\n", len(results), dropped)
-		store, serr := openStore(o.state)
+		store, done, serr := tracker.Open(ctx, o.state)
 		if serr != nil {
 			fmt.Fprintln(stderr, serr)
 			return 1
 		}
+		defer done()
 		// Postings already applied to or discarded leave before the AI
 		// step, so it never spends time on them.
 		visible, hidden, serr := splitByStatus(store, results)

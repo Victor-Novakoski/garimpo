@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"os"
 	"slices"
 	"strings"
 	"time"
@@ -57,6 +58,26 @@ func Open(ctx context.Context, url string) (*pgxpool.Pool, error) {
 	if err := pool.Ping(ctx); err != nil {
 		pool.Close()
 		return nil, fmt.Errorf("o banco não respondeu: %w", err)
+	}
+	return pool, nil
+}
+
+// OpenEnv connects to the database named by URLEnv. With migrated, it also
+// refuses a database that does not have the tables yet.
+func OpenEnv(ctx context.Context, migrated bool) (*pgxpool.Pool, error) {
+	url := os.Getenv(URLEnv)
+	if url == "" {
+		return nil, fmt.Errorf("defina %s com a URL do Postgres (veja o README)", URLEnv)
+	}
+	pool, err := Open(ctx, url)
+	if err != nil {
+		return nil, err
+	}
+	if migrated {
+		if err := Check(ctx, pool); err != nil {
+			pool.Close()
+			return nil, err
+		}
 	}
 	return pool, nil
 }

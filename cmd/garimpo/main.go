@@ -21,10 +21,15 @@ Comandos:
   note      anota algo numa vaga: garimpo note 12 "falei com a Ana"
   list      mostra as vagas que você marcou (vou aplicar, apliquei, entrevista)
   show      mostra uma vaga e o histórico dela: garimpo show 12
+  migrate   cria ou atualiza as tabelas no banco (Postgres)
+  import    copia para o banco o que você já marcou no arquivo local
   version   mostra a versão
   help      mostra esta ajuda
 
 Use "garimpo collect -h" para ver as opções da coleta.
+
+O que você marca fica num arquivo na sua máquina. Com a variável
+GARIMPO_DATABASE_URL definida, fica no Postgres (veja o README).
 `
 
 func main() {
@@ -47,6 +52,10 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return runList(context.Background(), args[1:], stdout, stderr)
 	case "show":
 		return runShow(context.Background(), args[1:], stdout, stderr)
+	case "migrate":
+		return runMigrate(context.Background(), args[1:], stdout, stderr)
+	case "import":
+		return runImport(context.Background(), args[1:], stdout, stderr)
 	case "version":
 		fmt.Fprintln(stdout, version)
 		return 0
