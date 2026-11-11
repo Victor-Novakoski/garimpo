@@ -144,8 +144,8 @@ func migrateOne(ctx context.Context, pool *pgxpool.Pool, version, sql string) (b
 	return true, tx.Commit(ctx)
 }
 
-// ErrNotMigrated is returned by Check when the tables are missing.
-var ErrNotMigrated = errors.New("o banco ainda não tem as tabelas do Garimpo (rode: garimpo migrate)")
+// ErrNotMigrated is returned by Check when the tables are missing or behind.
+var ErrNotMigrated = errors.New("o banco ainda não tem as tabelas do Garimpo, ou falta uma atualização delas (rode: garimpo migrate)")
 
 // Check reports whether every embedded migration was applied.
 func Check(ctx context.Context, pool *pgxpool.Pool) error {

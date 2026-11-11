@@ -47,6 +47,7 @@ func (b *book) sync(run Run) (out []Synced, changed []int) {
 			byKey[k] = i
 		}
 		e.Title, e.Company, e.URL = s.Job.Title, s.Job.Company, s.Job.URL
+		e.WorkMode, e.Contract, e.Seniority, e.Location = s.Job.WorkMode, s.Job.Contract, s.Job.Seniority, s.Job.Location
 		if s.Score >= 0 {
 			e.Score, e.Reasons = s.Score, s.Reasons
 		}
