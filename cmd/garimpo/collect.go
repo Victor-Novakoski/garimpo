@@ -38,6 +38,7 @@ type collectOptions struct {
 	aiModel   string
 	aiTop     int
 	aiCache   string
+	state     string
 }
 
 func parseCollect(args []string, stderr io.Writer) (collectOptions, error) {
@@ -56,6 +57,7 @@ func parseCollect(args []string, stderr io.Writer) (collectOptions, error) {
 	fs.IntVar(&o.aiTop, "ai-top", 20, "quantas vagas, das melhores pela nota das regras, a IA avalia")
 	fs.StringVar(&o.aiCache, "ai-cache", "", "arquivo de cache das notas da IA (\"off\" desliga; padrão: pasta de cache do usuário)")
 	fs.BoolVar(&o.why, "why", false, "mostra o motivo de cada ponto da nota")
+	stateFlag(fs, &o.state)
 	if err := fs.Parse(args); err != nil {
 		return o, err
 	}
@@ -97,10 +99,18 @@ func collectors(o collectOptions, now time.Time) []collector.Collector {
 	return cs
 }
 
-// gather runs the collectors, reports each source on stderr and returns
-// the classified, deduplicated jobs, only tech ones unless all is set. A
-// failing source never stops the rest.
-func gather(ctx context.Context, cs []collector.Collector, all bool, stderr io.Writer) []job.Job {
+// gathered is what one collection produced.
+type gathered struct {
+	jobs    []job.Job           // classified, deduplicated, tech only unless -all
+	copies  map[string][]string // key of a kept job -> keys of its duplicates
+	present map[string]bool     // key of everything the sources returned
+	sources map[string]bool     // sources that answered
+}
+
+// gather runs the collectors and reports each source on stderr. A failing
+// source never stops the rest.
+func gather(ctx context.Context, cs []collector.Collector, all bool, stderr io.Writer) gathered {
+	g := gathered{present: map[string]bool{}, sources: map[string]bool{}}
 	results, _ := collector.RunAll(ctx, cs)
 	var collected []job.Job
 	for _, r := range results {
@@ -108,9 +118,11 @@ func gather(ctx context.Context, cs []collector.Collector, all bool, stderr io.W
 			fmt.Fprintf(stderr, "%-28s erro: %v\n", r.Source, r.Err)
 		} else {
 			fmt.Fprintf(stderr, "%-28s %d vagas\n", r.Source, len(r.Jobs))
+			g.sources[r.Source] = true
 		}
 		for _, j := range r.Jobs {
 			collected = append(collected, normalize.Classify(j))
+			g.present[j.Key()] = true
 		}
 	}
 	kept := collected
@@ -122,10 +134,10 @@ func gather(ctx context.Context, cs []collector.Collector, all bool, stderr io.W
 			}
 		}
 	}
-	deduped := normalize.Dedupe(kept)
+	g.jobs, g.copies = normalize.DedupeGroups(kept)
 	fmt.Fprintf(stderr, "total: %d vagas (%d fora de tecnologia, %d repetidas removidas)\n",
-		len(deduped), len(collected)-len(kept), len(kept)-len(deduped))
-	return deduped
+		len(g.jobs), len(collected)-len(kept), len(kept)-len(g.jobs))
+	return g
 }
 
 func printJobs(w io.Writer, jobs []job.Job, asJSON bool) error {
@@ -165,18 +177,36 @@ func runCollect(ctx context.Context, args []string, stdout, stderr io.Writer) in
 		fmt.Fprintln(stderr, "-ai precisa de um perfil: a IA compara a vaga com ele")
 		return 2
 	}
-	jobs := gather(ctx, collectors(o, time.Now()), o.all, stderr)
+	at := now()
+	g := gather(ctx, collectors(o, at), o.all, stderr)
 	if !hasProfile {
 		fmt.Fprintf(stderr, "sem perfil: listando sem nota (copie profile.example.yaml para %s)\n", defaultProfile)
-		err = printJobs(stdout, jobs, o.asJSON)
+		err = printJobs(stdout, g.jobs, o.asJSON)
 	} else {
-		results, dropped := score.Rank(p, jobs)
+		results, dropped := score.Rank(p, g.jobs)
 		fmt.Fprintf(stderr, "perfil: %d vagas passaram, %d cortadas pelo filtro\n", len(results), dropped)
-		ranked, maxPoints := withoutAI(results), score.Max
-		if o.ai != "" {
-			ranked, maxPoints = assess(ctx, o, p, results, stderr), ai.MaxTotal
+		store, serr := openStore(o.state)
+		if serr != nil {
+			fmt.Fprintln(stderr, serr)
+			return 1
 		}
-		err = printResults(stdout, atLeast(ranked, o.minPoints), maxPoints, o.asJSON, o.why)
+		// Postings already applied to or discarded leave before the AI
+		// step, so it never spends time on them.
+		visible, hidden, serr := splitByStatus(store, results)
+		if serr != nil {
+			fmt.Fprintln(stderr, serr)
+			return 1
+		}
+		ranked, maxPoints := withoutAI(visible), score.Max
+		if o.ai != "" {
+			ranked, maxPoints = assess(ctx, o, p, visible, stderr), ai.MaxTotal
+		}
+		rows, serr := track(store, g, at, ranked, hidden, stderr)
+		if serr != nil {
+			fmt.Fprintln(stderr, serr)
+			return 1
+		}
+		err = printResults(stdout, atLeast(rows, o.minPoints), maxPoints, o.asJSON, o.why)
 	}
 	if err != nil {
 		fmt.Fprintln(stderr, err)
@@ -257,9 +287,9 @@ func loadProfile(path string) (profile.Profile, bool, error) {
 	return p, true, nil
 }
 
-func atLeast(results []ai.Ranked, minPoints int) []ai.Ranked {
-	out := results[:0:0]
-	for _, r := range results {
+func atLeast(rows []row, minPoints int) []row {
+	out := rows[:0:0]
+	for _, r := range rows {
 		if r.Total >= minPoints {
 			out = append(out, r)
 		}
@@ -267,10 +297,10 @@ func atLeast(results []ai.Ranked, minPoints int) []ai.Ranked {
 	return out
 }
 
-func printResults(w io.Writer, results []ai.Ranked, maxPoints int, asJSON, why bool) error {
+func printResults(w io.Writer, rows []row, maxPoints int, asJSON, why bool) error {
 	if asJSON {
 		enc := json.NewEncoder(w)
-		for _, r := range results {
+		for _, r := range rows {
 			if err := enc.Encode(r); err != nil {
 				return err
 			}
@@ -278,30 +308,34 @@ func printResults(w io.Writer, results []ai.Ranked, maxPoints int, asJSON, why b
 		return nil
 	}
 	if why {
-		printWhy(w, results, maxPoints)
+		printWhy(w, rows, maxPoints)
 		return nil
 	}
 	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
-	fmt.Fprintf(tw, "NOTA\tVAGA\tEMPRESA\tMODELO\tCONTRATO\tNÍVEL\tLINK\n")
-	for _, r := range results {
+	fmt.Fprintf(tw, "#\tNOTA\tESTADO\tVAGA\tEMPRESA\tMODELO\tCONTRATO\tNÍVEL\tLINK\n")
+	for _, r := range rows {
 		j := r.Job
-		fmt.Fprintf(tw, "%d/%d\t%s\t%s\t%s\t%s\t%s\t%s\n",
-			r.Total, maxPoints, cut(j.Title, 60), dash(j.Company), dash(string(j.WorkMode)),
-			dash(string(j.Contract)), dash(string(j.Seniority)), j.URL)
+		fmt.Fprintf(tw, "%s\t%d/%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+			r.number(), r.Total, maxPoints, dash(r.state()), cut(j.Title, 60), dash(j.Company),
+			dash(string(j.WorkMode)), dash(string(j.Contract)), dash(string(j.Seniority)), j.URL)
 	}
 	return tw.Flush()
 }
 
 // printWhy prints one block per job with every reason. It is not a table:
 // the AI lines are sentences and would stretch the columns.
-func printWhy(w io.Writer, results []ai.Ranked, maxPoints int) {
+func printWhy(w io.Writer, rows []row, maxPoints int) {
 	withAI := maxPoints == ai.MaxTotal
-	for i, r := range results {
+	for i, r := range rows {
 		if i > 0 {
 			fmt.Fprintln(w)
 		}
 		j := r.Job
-		fmt.Fprintf(w, "%d/%d  %s\n", r.Total, maxPoints, j.Title)
+		head := fmt.Sprintf("%d/%d  %s", r.Total, maxPoints, j.Title)
+		if r.Number > 0 {
+			head = fmt.Sprintf("%s  %s  [%s]", r.number(), head, r.state())
+		}
+		fmt.Fprintln(w, head)
 		fmt.Fprintf(w, "  %s | %s | %s | %s\n", dash(j.Company), dash(string(j.WorkMode)),
 			dash(string(j.Contract)), dash(string(j.Seniority)))
 		fmt.Fprintf(w, "  %s\n", j.URL)
@@ -324,6 +358,9 @@ func printWhy(w io.Writer, results []ai.Ranked, maxPoints int) {
 			fmt.Fprintf(w, "  +0 IA não avaliou: %s\n", r.AIError)
 		case withAI:
 			fmt.Fprintln(w, "  +0 IA não avaliou (fora das melhores, veja -ai-top)")
+		}
+		if r.Note != "" {
+			fmt.Fprintf(w, "  anotação: %s\n", r.Note)
 		}
 	}
 }

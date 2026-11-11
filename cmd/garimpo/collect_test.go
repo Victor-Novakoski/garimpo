@@ -41,12 +41,19 @@ func TestGatherClassifiesDedupesAndReports(t *testing.T) {
 		fakeCollector{name: "broken", err: errors.New("fora do ar")},
 	}
 	var log bytes.Buffer
-	jobs := gather(context.Background(), cs, false, &log)
+	g := gather(context.Background(), cs, false, &log)
+	jobs := g.jobs
 	if len(jobs) != 1 {
 		t.Fatalf("got %d jobs, want 1", len(jobs))
 	}
 	if jobs[0].WorkMode != job.WorkModeRemote || jobs[0].Seniority != job.SeniorityMid {
 		t.Errorf("not classified: %+v", jobs[0])
+	}
+	if copies := g.copies["a:1"]; len(copies) != 1 || copies[0] != "b:7" {
+		t.Errorf("copies = %v", g.copies)
+	}
+	if !g.present["c:3"] || !g.sources["a"] || g.sources["broken"] {
+		t.Errorf("present = %v, sources = %v", g.present, g.sources)
 	}
 	for _, want := range []string{"broken", "erro: fora do ar", "1 fora de tecnologia", "1 repetidas removidas"} {
 		if !strings.Contains(log.String(), want) {
@@ -100,11 +107,11 @@ func TestParseCollectRejectsExtraArgs(t *testing.T) {
 }
 
 func TestPrintResultsWhy(t *testing.T) {
-	results := withoutAI([]score.Result{{
+	results := rowsOf(withoutAI([]score.Result{{
 		Job:     job.Job{Title: "Dev Go", URL: "https://x/1"},
 		Points:  25,
 		Reasons: []score.Reason{{Points: 15, Text: "pede Go"}},
-	}})
+	}}))
 	var out bytes.Buffer
 	if err := printResults(&out, results, score.Max, false, true); err != nil {
 		t.Fatal(err)
@@ -117,6 +124,14 @@ func TestPrintResultsWhy(t *testing.T) {
 	if strings.Contains(out.String(), "IA") {
 		t.Errorf("AI line without -ai: %q", out.String())
 	}
+}
+
+func rowsOf(ranked []ai.Ranked) []row {
+	rows := make([]row, len(ranked))
+	for i, r := range ranked {
+		rows[i] = row{Ranked: r}
+	}
+	return rows
 }
 
 // fakeScorer answers by title, without any model.
@@ -161,7 +176,7 @@ func TestAssessReordersAndExplains(t *testing.T) {
 		t.Errorf("log = %q", log.String())
 	}
 	var out bytes.Buffer
-	if err := printResults(&out, ranked, ai.MaxTotal, false, true); err != nil {
+	if err := printResults(&out, rowsOf(ranked), ai.MaxTotal, false, true); err != nil {
 		t.Fatal(err)
 	}
 	for _, want := range []string{"65/100", "+30 IA, encaixe forte: bate com o perfil", "falta: inglês fluente", "fora das melhores"} {
@@ -208,7 +223,7 @@ func TestLoadProfile(t *testing.T) {
 }
 
 func TestAtLeast(t *testing.T) {
-	rs := []ai.Ranked{{Total: 60}, {Total: 30}}
+	rs := rowsOf([]ai.Ranked{{Total: 60}, {Total: 30}})
 	if got := atLeast(rs, 50); len(got) != 1 || got[0].Total != 60 {
 		t.Fatalf("atLeast = %v", got)
 	}

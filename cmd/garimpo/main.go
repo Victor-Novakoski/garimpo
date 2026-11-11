@@ -16,7 +16,11 @@ Uso:
   garimpo <comando>
 
 Comandos:
-  collect   coleta as vagas e lista no terminal
+  collect   coleta as vagas e mostra a lista do dia
+  mark      marca o que você fez com uma vaga: garimpo mark 12 apliquei
+  note      anota algo numa vaga: garimpo note 12 "falei com a Ana"
+  list      mostra as vagas que você marcou (vou aplicar, apliquei, entrevista)
+  show      mostra uma vaga e o histórico dela: garimpo show 12
   version   mostra a versão
   help      mostra esta ajuda
 
@@ -35,6 +39,14 @@ func run(args []string, stdout, stderr io.Writer) int {
 	switch args[0] {
 	case "collect":
 		return runCollect(context.Background(), args[1:], stdout, stderr)
+	case "mark":
+		return runMark(context.Background(), args[1:], stdout, stderr)
+	case "note":
+		return runNote(context.Background(), args[1:], stdout, stderr)
+	case "list":
+		return runList(context.Background(), args[1:], stdout, stderr)
+	case "show":
+		return runShow(context.Background(), args[1:], stdout, stderr)
 	case "version":
 		fmt.Fprintln(stdout, version)
 		return 0
