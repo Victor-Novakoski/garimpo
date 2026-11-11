@@ -35,6 +35,7 @@ func eachStore(t *testing.T, test func(t *testing.T, s Store)) {
 	t.Run("file", func(t *testing.T) {
 		test(t, OpenFile(filepath.Join(t.TempDir(), "sub", "vagas.json")))
 	})
+	t.Run("postgres", func(t *testing.T) { test(t, openTestPostgres(t)) })
 }
 
 func TestParseStatus(t *testing.T) {
