@@ -169,3 +169,22 @@ func TestIsTech(t *testing.T) {
 		}
 	}
 }
+
+func TestDedupeGroups(t *testing.T) {
+	jobs := []job.Job{
+		{Source: "a", SourceID: "1", Company: "Acme", Title: "[Remoto] Dev Go Pleno"},
+		{Source: "b", SourceID: "7", Company: "acme", Title: "Dev Go Pleno - PJ"},
+		{Source: "a", SourceID: "2", Company: "Acme", Title: "Designer de Produto"},
+		{Source: "c", SourceID: "9", Company: "ACME", Title: "Dev Go (Pleno) remoto"},
+	}
+	kept, copies := DedupeGroups(jobs)
+	if len(kept) != 2 {
+		t.Fatalf("kept %d, want 2", len(kept))
+	}
+	if got := copies["a:1"]; len(got) != 2 || got[0] != "b:7" || got[1] != "c:9" {
+		t.Errorf("copies = %v", copies)
+	}
+	if len(copies["a:2"]) != 0 {
+		t.Errorf("unique posting has copies: %v", copies)
+	}
+}

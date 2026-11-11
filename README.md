@@ -43,6 +43,19 @@ go run ./cmd/garimpo collect -ai api -why     # usa a API do Claude, com ANTHROP
 
 Por padrão a IA avalia as 20 melhores vagas pela nota das regras (`-ai-top`), com o modelo Haiku (`-ai-model` troca). Cada vaga é avaliada uma vez: a resposta fica em cache e a próxima rodada só avalia o que é novo. Se a IA falhar, a vaga continua na lista com a nota das regras.
 
+### Acompanhando as vagas
+
+Cada vaga da lista tem um número que nunca muda. Ela continua aparecendo em toda rodada até você dizer o que fez com ela:
+
+```bash
+go run ./cmd/garimpo mark 12 apliquei         # estados: nova, vou aplicar, apliquei, entrevista, descartada
+go run ./cmd/garimpo note 12 "falei com a Ana do RH"
+go run ./cmd/garimpo list                     # o que está em andamento: vou aplicar, apliquei, entrevista
+go run ./cmd/garimpo show 12                  # a vaga, a anotação e o histórico
+```
+
+As que você marcou como "apliquei", "entrevista" ou "descartada" saem da lista do dia. As marcadas como "vou aplicar" sobem para o topo, e as que chegaram nesta rodada aparecem como "nova hoje". Tudo fica num arquivo na sua máquina, fora do repositório. O desenho completo está em [docs/FLOW.md](docs/FLOW.md).
+
 Com `GITHUB_TOKEN` definido, a coleta do GitHub usa o limite maior da API.
 
 ## Por que existe
