@@ -25,7 +25,7 @@ func day(t *testing.T, store tracker.Store, at time.Time, results []score.Result
 		t.Fatal(err)
 	}
 	var buf bytes.Buffer
-	rows, err = track(store, g, at, withoutAI(visible), hidden, &buf)
+	rows, err = track(store, g, at, withoutAI(visible), hidden, false, &buf)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -44,7 +44,7 @@ func TestDailyListFollowsTheFlow(t *testing.T) {
 	store := tracker.OpenFile(path)
 	d1 := time.Date(2026, 11, 11, 9, 0, 0, 0, time.UTC)
 	results := []score.Result{
-		{Job: job.Job{Source: "s", SourceID: "1", Title: "Dev Go", URL: "https://x/1"}, Points: 50},
+		{Job: job.Job{Source: "s", SourceID: "1", Title: "Dev Go", URL: "https://x/1"}, Points: 50, Reasons: []score.Reason{{Points: 20, Text: "Go no título"}}},
 		{Job: job.Job{Source: "s", SourceID: "2", Title: "Dev React", URL: "https://x/2"}, Points: 40},
 		{Job: job.Job{Source: "s", SourceID: "3", Title: "Dev Java", URL: "https://x/3"}, Points: 30},
 	}
@@ -93,7 +93,7 @@ func TestDailyListFollowsTheFlow(t *testing.T) {
 		t.Errorf("list nova = %q", out)
 	}
 	out, _, code = cli(t, "show", "-state", path, "1")
-	if code != 0 || !strings.Contains(out, "nova -> apliquei") || !strings.Contains(out, "https://x/1") {
+	if code != 0 || !strings.Contains(out, "nova -> apliquei") || !strings.Contains(out, "+20 Go no título") || !strings.Contains(out, "https://x/1") {
 		t.Errorf("show = %q", out)
 	}
 }
@@ -123,7 +123,7 @@ func TestTrackingOff(t *testing.T) {
 	if err != nil || len(visible) != 1 || len(hidden) != 0 {
 		t.Fatal("split without a store")
 	}
-	rows, err := track(nil, gathered{}, time.Now(), withoutAI(visible), nil, &bytes.Buffer{})
+	rows, err := track(nil, gathered{}, time.Now(), withoutAI(visible), nil, false, &bytes.Buffer{})
 	if err != nil || len(rows) != 1 || rows[0].number() != "-" || rows[0].state() != "" {
 		t.Fatalf("rows = %+v", rows)
 	}

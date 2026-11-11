@@ -9,7 +9,7 @@ Um job em Go roda uma vez por dia no GitHub Actions, coleta, dá nota e grava no
 3. **Filtro duro**: descarta o que não serve. Nada aqui depende de IA.
 4. **Nota determinística (0 a 70)**: stack exigida e desejável com peso por skill, remoto, contrato, nível, faixa salarial quando houver. Cada ponto guarda o motivo.
 5. **Nota da IA (0 a 30)**: compara a vaga com o perfil e devolve uma classe fixa, mais pontos fortes, lacunas e o que destacar. Só roda para o que passou no filtro.
-6. **Gravação**: vagas, notas e motivos no Postgres.
+6. **Gravação**: o registro de cada vaga (estado, anotação, nota e motivos da última rodada) e o texto dela no Postgres, ou num arquivo local quando não há banco configurado.
 7. **Aviso**: resumo das melhores no Telegram.
 8. **Painel**: lista por nota, detalhe com motivos e o funil (nova, vou aplicar, apliquei, entrevista, descartada).
 
@@ -28,12 +28,36 @@ Os cortes são o ponto de partida e mudam depois de duas semanas de uso.
 
 | Parte | Escolha |
 | --- | --- |
-| Coleta, nota e API | Go, biblioteca padrão + `chi` na API |
-| Banco | Postgres no Supabase, SQL puro com migrações |
+| Coleta, nota e API | Go, biblioteca padrão (o roteador é o `net/http`) |
+| Banco | Postgres no Supabase, SQL puro com migrações, pelo driver `pgx` |
 | IA | Interface `Scorer`: `claude -p` local ou API do Claude pelo SDK oficial |
 | Painel | React + Vite + TypeScript na Vercel |
 | Agendamento | GitHub Actions, cron diário |
-| Acesso | Login só do dono (Supabase Auth); a API não fica aberta |
+| Acesso | Só o dono: hoje um token fixo no cabeçalho `Authorization`; o login do painel (Supabase Auth) entra na etapa 4 |
+
+## Banco e API
+
+O que a pessoa fez com cada vaga fica atrás de uma interface (`tracker.Store`) com duas implementações: um arquivo local e o Postgres. As regras do [FLOW.md](FLOW.md) estão escritas uma vez só (`internal/tracker/rules.go`) e as duas implementações passam pelos mesmos testes. A CLI e a API escolhem pela configuração: com `GARIMPO_DATABASE_URL` definida é o banco, sem ela é o arquivo.
+
+| Tabela | O que guarda |
+| --- | --- |
+| `entries` | uma linha por vaga: o número fixo, o estado, a anotação, a nota e os motivos da última rodada, primeira e última vez vista, se saiu da fonte |
+| `entry_keys` | as chaves (`fonte:id`) da vaga e das cópias dela em outras fontes |
+| `entry_events` | o histórico: cada troca de estado, com data |
+| `jobs` | o texto da vaga como veio da última coleta, para a tela de detalhe |
+| `runs` | as rodadas: quando, quantas vagas listadas, quantas novas, quais fontes responderam |
+| `schema_migrations` | quais migrações já foram aplicadas |
+
+As migrações são arquivos SQL numerados em `internal/db/migrations/`, embutidos no binário e aplicados pelo `garimpo migrate`, cada um numa transação. Uma rodada grava tudo numa transação e num lote só, e quem escreve pega uma trava do banco antes, para dois processos nunca darem o mesmo número a vagas diferentes.
+
+A API (`cmd/garimpo-api`, rotas em `internal/api`) não coleta e não dá nota: lê e escreve o mesmo registro. A nota que ela mostra é a da última rodada. Erro do banco vai para o log do servidor e nunca para a resposta.
+
+Segurança do acesso:
+
+- **Token do dono** em `GARIMPO_API_TOKEN`, com pelo menos 32 caracteres, comparado em tempo constante. Sem ele toda rota responde 401, exista ou não.
+- **RLS ligado sem policy** em todas as tabelas: a API REST que o Supabase publica para o schema `public` não enxerga nada. O Garimpo entra como dono, pela conexão do Postgres.
+- **A URL do banco só no ambiente.** Nunca em flag (o histórico do terminal e a lista de processos mostram) e nunca em mensagem de erro.
+- **A API escuta só em `127.0.0.1`** por padrão e não fala HTTPS; para sair da máquina precisa de um proxy com HTTPS na frente.
 
 ## Perfil
 

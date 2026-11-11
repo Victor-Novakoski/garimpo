@@ -25,6 +25,8 @@ go run ./cmd/garimpo collect -json    # uma vaga por linha, em JSON
 go test ./...
 ```
 
+Os testes do banco só rodam com `GARIMPO_TEST_DATABASE_URL` apontando para um Postgres de teste (a CI sobe um); sem ela são pulados, e as mesmas regras são testadas pelo arquivo.
+
 Para filtrar e dar nota, copie `profile.example.yaml` para `profile.yaml` (fica fora do git) e ajuste. Com ele, o `collect` corta o que não serve e ordena pela nota:
 
 ```bash
@@ -57,6 +59,43 @@ go run ./cmd/garimpo show 12                  # a vaga, a anotação e o histór
 As que você marcou como "apliquei", "entrevista" ou "descartada" saem da lista do dia. As marcadas como "vou aplicar" sobem para o topo, e as que chegaram nesta rodada aparecem como "nova hoje". Tudo fica num arquivo na sua máquina, fora do repositório. O desenho completo está em [docs/FLOW.md](docs/FLOW.md).
 
 Com `GITHUB_TOKEN` definido, a coleta do GitHub usa o limite maior da API.
+
+### Guardando no banco
+
+Por padrão o que você marca fica no arquivo local. Para guardar num Postgres (o plano é o Supabase, no plano grátis), ponha a URL de conexão na variável `GARIMPO_DATABASE_URL`. Ela leva a senha do banco, por isso vai só no ambiente: nunca num arquivo do repositório nem numa flag.
+
+```bash
+export GARIMPO_DATABASE_URL='postgres://usuario:senha@host:5432/postgres?sslmode=require'
+go run ./cmd/garimpo migrate   # cria as tabelas; pode rodar de novo sem medo
+go run ./cmd/garimpo import    # copia para o banco o que já estava marcado no arquivo
+```
+
+No Supabase, a URL está no botão **Connect** do projeto. Use a do **Session pooler**, que funciona em rede IPv4.
+
+Com a variável definida, `collect`, `mark`, `note`, `list` e `show` passam a usar o banco, com os mesmos números e estados. O `import` só roda num banco vazio e não mexe no arquivo, que fica como cópia. Para voltar ao arquivo numa rodada, use `-state file`.
+
+As tabelas nascem com RLS ligado e sem nenhuma policy: a API REST que o Supabase publica sozinho não lê nem escreve nada. Só o Garimpo entra, pela conexão do Postgres.
+
+### API
+
+A API serve o mesmo fluxo por HTTP, para o painel. Ela lê e escreve o registro (arquivo ou banco, pela mesma regra da CLI); quem coleta continua sendo o `collect`.
+
+```bash
+export GARIMPO_API_TOKEN="$(openssl rand -hex 32)"   # o token do dono, com 32 caracteres ou mais
+go run ./cmd/garimpo-api                             # escuta em 127.0.0.1:8080
+
+curl -H "Authorization: Bearer $GARIMPO_API_TOKEN" localhost:8080/jobs
+```
+
+| Rota | O que faz |
+| --- | --- |
+| `GET /jobs` | a lista do dia: "vou aplicar" no topo, depois as novas por nota |
+| `GET /jobs?status=saved,applied,interview` | as vagas nesses estados, na ordem pedida (`all` traz todas) |
+| `GET /jobs/12` | a vaga, os motivos da nota, a anotação, o histórico e, com o banco, o texto da vaga |
+| `PATCH /jobs/12` | `{"status": "applied"}` marca, `{"note": "falei com a Ana"}` anota; podem vir juntos |
+| `GET /health` | responde `ok`, sem token |
+
+Toda rota, menos `/health`, exige o token. Os estados são `new`, `saved`, `applied`, `interview` e `discarded`; as palavras da CLI ("apliquei") também valem. A API não fala HTTPS: fora da sua máquina, só atrás de um proxy que fale.
 
 ## Por que existe
 

@@ -74,7 +74,7 @@ A lista do dia mostra, nesta ordem:
 
 ## As três telas do mesmo fluxo
 
-| | Agora: CLI | Etapa 3: API | Etapa 4: painel |
+| | CLI | API | Etapa 4: painel |
 | --- | --- | --- | --- |
 | Ver a lista do dia | `garimpo collect` | `GET /jobs` | tela inicial |
 | Ver o que está em andamento | `garimpo list` | `GET /jobs?status=saved,applied,interview` | tela de acompanhamento |
@@ -82,9 +82,11 @@ A lista do dia mostra, nesta ordem:
 | Ver uma vaga | `garimpo show 12` | `GET /jobs/12` | tela da vaga, com os motivos da nota |
 | Marcar | `garimpo mark 12 apliquei` | `PATCH /jobs/12` | botões na vaga |
 | Anotar | `garimpo note 12 "falei com a Ana"` | `PATCH /jobs/12` | campo na vaga |
-| Onde fica guardado | arquivo na pasta de configuração do usuário (`garimpo/vagas.json`), fora do git | Postgres no Supabase | o mesmo banco, pela API |
+| Onde fica guardado | arquivo na pasta de configuração do usuário (`garimpo/vagas.json`), fora do git, ou o Postgres | o mesmo registro da CLI | o mesmo banco, pela API |
 
-No código, quem guarda e lê os estados fica atrás de uma interface (`tracker.Store`), do mesmo jeito que a IA fica atrás de `ai.Scorer`. Hoje a implementação é um arquivo; na etapa 3 entra a do Postgres, e a CLI nem percebe a troca. Um comando importa o arquivo local para o banco, para você não perder o que já marcou.
+No código, quem guarda e lê os estados fica atrás de uma interface (`tracker.Store`), do mesmo jeito que a IA fica atrás de `ai.Scorer`. Há duas implementações, o arquivo e o Postgres, com as mesmas regras e os mesmos testes; a CLI e a API usam o banco quando `GARIMPO_DATABASE_URL` está definida e o arquivo quando não está. O `garimpo import` copia o arquivo local para o banco, para você não perder o que já marcou.
+
+Na API, `GET /jobs` sem parâmetro é a lista do dia (sem o que saiu da fonte); com `?status=` vêm todas as vagas daqueles estados, e as que saíram da fonte trazem `"gone": true`. "Nova hoje" (`new_today`) é a vaga vista pela primeira vez na última rodada. O `PATCH` aceita `status`, `note` ou os dois, e uma anotação vazia apaga a anterior.
 
 ## Ordem de construção
 
