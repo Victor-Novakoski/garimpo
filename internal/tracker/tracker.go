@@ -1,8 +1,9 @@
 // Package tracker remembers what the person did with each posting. The
 // flow is in docs/FLOW.md: a posting only leaves the daily list when the
 // person marks it, and the same states serve the CLI, the API and the
-// panel. Store is the interface; File keeps it in a local JSON file until
-// the database arrives.
+// panel. Store is the interface, with two implementations that follow the
+// same rules (rules.go): File keeps a local JSON file and Postgres keeps
+// the database behind the API.
 package tracker
 
 import (
@@ -104,7 +105,10 @@ type Entry struct {
 	Note    string   `json:"note,omitempty"`
 	// Score is the total from the last run that listed it. It is only
 	// informative: the score is recomputed on every run.
-	Score     int       `json:"score"`
+	Score int `json:"score"`
+	// Reasons explain that score, one readable line each, as of the same
+	// run.
+	Reasons   []string  `json:"reasons,omitempty"`
 	FirstSeen time.Time `json:"first_seen"`
 	LastSeen  time.Time `json:"last_seen"`
 	// Gone is set when the posting no longer shows up in its source.
@@ -127,6 +131,8 @@ type Seen struct {
 	// Score is the total of this run. A negative score keeps the one on
 	// record (for postings the run did not score again).
 	Score int
+	// Reasons explain the score. They are recorded together with it.
+	Reasons []string
 }
 
 // Run describes one collection to Sync.
@@ -149,8 +155,9 @@ type Synced struct {
 	NewToday bool
 }
 
-// Store keeps the entries. The file implementation is in file.go; the
-// database one comes with the API and must behave the same.
+// Store keeps the entries. File (file.go) and Postgres (postgres.go) are
+// the implementations; both apply the rules in rules.go and pass the same
+// tests.
 type Store interface {
 	// Sync records a run and returns the entry of each listed posting, in
 	// the same order.

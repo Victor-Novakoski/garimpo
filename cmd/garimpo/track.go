@@ -92,7 +92,7 @@ func splitByStatus(store tracker.Store, results []score.Result) (visible, hidden
 
 // track records the run and builds the daily list: postings marked "vou
 // aplicar" first, then the rest by score.
-func track(store tracker.Store, g gathered, now time.Time, ranked []ai.Ranked, hidden []score.Result, stderr io.Writer) ([]row, error) {
+func track(store tracker.Store, g gathered, now time.Time, ranked []ai.Ranked, hidden []score.Result, withAI bool, stderr io.Writer) ([]row, error) {
 	rows := make([]row, len(ranked))
 	for i, r := range ranked {
 		rows[i] = row{Ranked: r}
@@ -102,7 +102,7 @@ func track(store tracker.Store, g gathered, now time.Time, ranked []ai.Ranked, h
 	}
 	run := tracker.Run{At: now, Present: g.present, Sources: g.sources}
 	for _, r := range ranked {
-		run.Listed = append(run.Listed, tracker.Seen{Job: r.Job, Copies: g.copies[r.Job.Key()], Score: r.Total})
+		run.Listed = append(run.Listed, tracker.Seen{Job: r.Job, Copies: g.copies[r.Job.Key()], Score: r.Total, Reasons: whyLines(r, withAI)})
 	}
 	for _, r := range hidden {
 		run.Listed = append(run.Listed, tracker.Seen{Job: r.Job, Copies: g.copies[r.Job.Key()], Score: -1})
@@ -299,6 +299,9 @@ func runShow(_ context.Context, args []string, stdout, stderr io.Writer) int {
 	fmt.Fprintf(stdout, "  link: %s\n", e.URL)
 	fmt.Fprintf(stdout, "  estado: %s, desde %s\n", entryState(e), e.Since().Local().Format(day))
 	fmt.Fprintf(stdout, "  nota na última coleta: %d\n", e.Score)
+	for _, line := range e.Reasons {
+		fmt.Fprintf(stdout, "    %s\n", line)
+	}
 	fmt.Fprintf(stdout, "  vista pela primeira vez em %s, pela última em %s\n",
 		e.FirstSeen.Local().Format(day), e.LastSeen.Local().Format(day))
 	if e.Note != "" {

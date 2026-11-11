@@ -206,7 +206,7 @@ func runCollect(ctx context.Context, args []string, stdout, stderr io.Writer) in
 		if o.ai != "" {
 			ranked, maxPoints = assess(ctx, o, p, visible, stderr), ai.MaxTotal
 		}
-		rows, serr := track(store, g, at, ranked, hidden, stderr)
+		rows, serr := track(store, g, at, ranked, hidden, o.ai != "", stderr)
 		if serr != nil {
 			fmt.Fprintln(stderr, serr)
 			return 1
@@ -344,30 +344,41 @@ func printWhy(w io.Writer, rows []row, maxPoints int) {
 		fmt.Fprintf(w, "  %s | %s | %s | %s\n", dash(j.Company), dash(string(j.WorkMode)),
 			dash(string(j.Contract)), dash(string(j.Seniority)))
 		fmt.Fprintf(w, "  %s\n", j.URL)
-		for _, reason := range r.Reasons {
-			fmt.Fprintf(w, "  %s\n", reason)
-		}
-		switch {
-		case r.AI != nil:
-			fmt.Fprintf(w, "  %+d IA, encaixe %s: %s\n", r.AI.Points(), r.AI.Fit.Label(), r.AI.Summary)
-			for _, s := range r.AI.Strengths {
-				fmt.Fprintf(w, "      a favor: %s\n", s)
-			}
-			for _, s := range r.AI.Gaps {
-				fmt.Fprintf(w, "      falta: %s\n", s)
-			}
-			for _, s := range r.AI.Highlights {
-				fmt.Fprintf(w, "      destaque: %s\n", s)
-			}
-		case r.AIError != "":
-			fmt.Fprintf(w, "  +0 IA não avaliou: %s\n", r.AIError)
-		case withAI:
-			fmt.Fprintln(w, "  +0 IA não avaliou (fora das melhores, veja -ai-top)")
+		for _, line := range whyLines(r.Ranked, withAI) {
+			fmt.Fprintf(w, "  %s\n", line)
 		}
 		if r.Note != "" {
 			fmt.Fprintf(w, "  anotação: %s\n", r.Note)
 		}
 	}
+}
+
+// whyLines explains the score of a job, one line per reason: the rules
+// first, then what the AI said. The tracker keeps these lines so the detail
+// of a posting can show them without collecting again.
+func whyLines(r ai.Ranked, withAI bool) []string {
+	var lines []string
+	for _, reason := range r.Reasons {
+		lines = append(lines, reason.String())
+	}
+	switch {
+	case r.AI != nil:
+		lines = append(lines, fmt.Sprintf("%+d IA, encaixe %s: %s", r.AI.Points(), r.AI.Fit.Label(), r.AI.Summary))
+		for _, s := range r.AI.Strengths {
+			lines = append(lines, "    a favor: "+s)
+		}
+		for _, s := range r.AI.Gaps {
+			lines = append(lines, "    falta: "+s)
+		}
+		for _, s := range r.AI.Highlights {
+			lines = append(lines, "    destaque: "+s)
+		}
+	case r.AIError != "":
+		lines = append(lines, "+0 IA não avaliou: "+r.AIError)
+	case withAI:
+		lines = append(lines, "+0 IA não avaliou (fora das melhores, veja -ai-top)")
+	}
+	return lines
 }
 
 func cut(s string, n int) string {
