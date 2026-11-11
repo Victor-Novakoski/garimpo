@@ -30,6 +30,9 @@ type Profile struct {
 	Prefer    Prefer        `yaml:"prefer"`
 	Avoid     Avoid         `yaml:"avoid"`
 	Skills    []Skill       `yaml:"skills"`
+	// About is free text for the AI step: experience, years, projects,
+	// what the person is looking for. No rule reads it.
+	About string `yaml:"about"`
 }
 
 // Accept lists what may pass the hard filter. A job whose value the source
