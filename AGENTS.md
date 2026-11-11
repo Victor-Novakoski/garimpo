@@ -16,8 +16,8 @@ Guia para quem (pessoa ou IA) for mexer neste repositório. Leia antes de começ
 
 ## Stack
 
-- Go 1.25: coleta, nota e API (`cmd/`, `internal/`). Dependências: `yaml.v3` e o SDK oficial da Anthropic.
-- PostgreSQL no Supabase (a partir da etapa 3), SQL puro com migrações, sem ORM.
+- Go 1.25: coleta, nota e API (`cmd/`, `internal/`). Dependências: `yaml.v3`, o SDK oficial da Anthropic e o driver `pgx`.
+- PostgreSQL no Supabase, SQL puro com migrações em `internal/db/migrations/`, sem ORM.
 - React + Vite + TypeScript no `web/` (a partir da etapa 4), deploy na Vercel.
 - GitHub Actions: CI e o job diário de coleta.
 
@@ -31,6 +31,12 @@ go run ./cmd/garimpo collect          # coleta e lista as vagas
 go run ./cmd/garimpo collect -gupy    # inclui a Gupy (só uso pessoal)
 go run ./cmd/garimpo collect -ai local -why   # soma a nota da IA pelo claude -p
 go run ./cmd/garimpo mark 12 apliquei         # marca o que foi feito com a vaga #12
+go run ./cmd/garimpo migrate                  # cria as tabelas no banco de GARIMPO_DATABASE_URL
+go run ./cmd/garimpo import                   # copia o arquivo local para o banco
+go run ./cmd/garimpo-api                      # a API, com o token em GARIMPO_API_TOKEN
+
+# testes do banco: precisam de um Postgres de teste (sem a variável, são pulados)
+GARIMPO_TEST_DATABASE_URL='postgres://garimpo:garimpo@localhost:5432/garimpo_test' go test -race ./...
 ```
 
 ## Regras do repositório
@@ -51,19 +57,26 @@ go run ./cmd/garimpo mark 12 apliquei         # marca o que foi feito com a vaga
 - **Nota explicável:** todo ponto da nota tem um motivo legível.
 - **Dados pessoais fora do repositório.** Currículo e perfil reais nunca são commitados; o repositório traz só um perfil de exemplo.
 - **A vaga só sai da lista quando a pessoa marca.** Os estados e as regras estão em [docs/FLOW.md](docs/FLOW.md) e valem igual para a CLI, a API e o painel.
-- **Testes sem rede.** Coletores e IA são testados com respostas salvas em `testdata/`, sem chamar modelo nenhum.
+- **Testes sem rede.** Coletores e IA são testados com respostas salvas em `testdata/`, sem chamar modelo nenhum. Os testes do banco usam um Postgres local ou o da CI, nunca o do Supabase.
+- **Arquivo e banco seguem as mesmas regras.** Regra nova do fluxo entra em `internal/tracker/rules.go` e no teste que roda nas duas implementações, nunca em uma só.
+- **Segredo só no ambiente.** A URL do banco e o token da API vêm de variável de ambiente: nunca em flag, em arquivo do repositório, em log ou em mensagem de erro.
+- **Tabela nova nasce com RLS ligado.** O Supabase expõe o schema `public` pela API REST dele; sem RLS, a chave pública leria os dados.
+- **Migração aplicada não se edita.** Mudança no banco é um arquivo novo, com o número seguinte.
 
 ## Estrutura
 
 ```
-cmd/garimpo/          a CLI (collect, mark, note, list, show)
+cmd/garimpo/          a CLI (collect, mark, note, list, show, migrate, import)
+cmd/garimpo-api/      o servidor da API
 internal/job/         o modelo de vaga
 internal/httpx/       o cliente HTTP educado, único caminho da coleta para a rede
 internal/normalize/   classificação (modelo, contrato, nível) e duplicadas
 internal/profile/     o perfil (o que aceitar, evitar e quanto vale cada skill)
 internal/score/       filtro duro e nota de 0 a 70 com motivos
 internal/ai/          nota da IA de 0 a 30: interface Scorer, claude -p local e API
-internal/tracker/     o que a pessoa fez com cada vaga: estados do funil, interface Store e arquivo local
+internal/tracker/     o que a pessoa fez com cada vaga: estados do funil, regras, interface Store, arquivo local e Postgres
+internal/db/          conexão com o Postgres e as migrações SQL
+internal/api/         as rotas HTTP (listar, ver, marcar, anotar) e o token do dono
 internal/collector/   a interface dos coletores e um pacote por fonte
 docs/                 arquitetura, roadmap, decisões, fontes
 ```
