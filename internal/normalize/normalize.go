@@ -227,3 +227,26 @@ var techWords = []string{
 func IsTech(j job.Job) bool {
 	return containsAny(wordText(j.Title+" "+strings.Join(j.Tags, " ")), techWords)
 }
+
+// cities are Brazilian cities with many tech jobs. A posting that names one
+// and does not say remote is often on-site or hybrid.
+var cities = []string{
+	"São Paulo", "Rio de Janeiro", "Belo Horizonte", "Curitiba", "Porto Alegre",
+	"Florianópolis", "Campinas", "Recife", "Salvador", "Fortaleza", "Brasília",
+	"Goiânia", "Manaus", "Belém", "Joinville", "Blumenau", "Londrina",
+	"Maringá", "Ribeirão Preto", "São José dos Campos", "Uberlândia",
+	"João Pessoa", "Maceió", "Aracaju", "Teresina", "São Luís", "Cuiabá",
+	"Campo Grande", "Sorocaba", "Barueri", "Osasco", "São Carlos",
+}
+
+// City returns the first city from the list named in the title or the
+// location, or "".
+func City(j job.Job) string {
+	text := wordText(j.Title + " " + j.Location)
+	for _, c := range cities {
+		if strings.Contains(text, " "+strings.Join(Words(c), " ")+" ") {
+			return c
+		}
+	}
+	return ""
+}
