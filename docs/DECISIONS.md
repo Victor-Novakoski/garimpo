@@ -4,6 +4,8 @@ Registro das escolhas e do porquê. A mais nova em cima.
 
 | Data | Decisão | Por quê |
 | --- | --- | --- |
+| 11/11/2026 | Mais fontes antes do banco: Lever e 13 empresas novas no Greenhouse, cada uma conferida pela API | Com 3 empresas a lista dependia quase só da Stone. Mais vagas boas valem mais agora do que guardar poucas num banco |
+| 11/11/2026 | No Lever, vaga marcada com outro país fica de fora já na coleta; o modelo de trabalho vem do campo da API | O campo `country` é confiável e essas empresas também contratam na França e no México. No Greenhouse não existe esse campo, então lá continua o filtro por local |
 | 11/11/2026 | A vaga só sai da lista quando a pessoa marca; aparecer numa rodada não conta como vista | O Victor nem sempre lê a lista inteira. Esconder o que já apareceu faria ele perder vaga boa sem saber |
 | 11/11/2026 | Estados do funil guardados atrás de `tracker.Store`, hoje num arquivo local | Dá para usar já, sem banco. Na etapa 3 o Postgres entra atrás da mesma interface e a CLI não muda |
 | 11/11/2026 | Job diário e Telegram adiados | O Victor vai rodar local por enquanto; avisar só de vaga nova fica mais simples depois que o registro de estados existir |

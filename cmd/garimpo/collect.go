@@ -16,6 +16,7 @@ import (
 	"github.com/victor-novakoski/garimpo/internal/collector/githubissues"
 	"github.com/victor-novakoski/garimpo/internal/collector/greenhouse"
 	"github.com/victor-novakoski/garimpo/internal/collector/gupy"
+	"github.com/victor-novakoski/garimpo/internal/collector/lever"
 	"github.com/victor-novakoski/garimpo/internal/job"
 	"github.com/victor-novakoski/garimpo/internal/normalize"
 	"github.com/victor-novakoski/garimpo/internal/profile"
@@ -86,6 +87,10 @@ func collectors(o collectOptions, now time.Time) []collector.Collector {
 	green := greenhouse.NewClient()
 	for _, b := range greenhouse.Boards {
 		cs = append(cs, greenhouse.Collector{Board: b, Client: green})
+	}
+	lev := lever.NewClient()
+	for _, s := range lever.Sites {
+		cs = append(cs, lever.Collector{Site: s, Client: lev})
 	}
 	if o.gupy {
 		var terms []string

@@ -25,13 +25,26 @@ type Board struct {
 	Company string // display name
 }
 
-// Boards are Brazilian companies with an active Greenhouse board
-// (checked on 10/11/2026). Many of their jobs are not in tech; the filter
-// in stage 2 handles that.
+// Boards are companies with open jobs in Brazil on Greenhouse (checked on
+// 11/11/2026). Many of their jobs are not in tech or not in Brazil; the
+// filter handles that.
 var Boards = []Board{
 	{Token: "stone", Company: "Stone"},
 	{Token: "quintoandar", Company: "QuintoAndar"},
 	{Token: "wildlifestudios", Company: "Wildlife Studios"},
+	{Token: "arcoeducacao", Company: "Arco Educação"},
+	{Token: "btgpactual", Company: "BTG Pactual"},
+	{Token: "c6bank", Company: "C6 Bank"},
+	{Token: "clara", Company: "Clara"},
+	{Token: "ebanx", Company: "EBANX"},
+	{Token: "getnet", Company: "Getnet"},
+	{Token: "gympass", Company: "Wellhub"},
+	{Token: "incognia", Company: "Incognia"},
+	{Token: "inter", Company: "Inter"},
+	{Token: "jusbrasil", Company: "Jusbrasil"},
+	{Token: "rdstation", Company: "RD Station"},
+	{Token: "vtex", Company: "VTEX"},
+	{Token: "xpinc", Company: "XP Inc."},
 }
 
 // Getter is the part of httpx.Client the collector needs.

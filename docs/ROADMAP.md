@@ -43,6 +43,6 @@ Seis etapas, um PR por etapa para a `develop`. Ao fim da etapa 2 o Garimpo já e
 
 ## Etapa 5: vitrine (5 a 8 h)
 
-- [ ] Coletor do Lever e mais empresas no Greenhouse
+- [x] Coletor do Lever e mais empresas no Greenhouse (adiantado: 16 empresas no Greenhouse e 3 no Lever)
 - [ ] README com prints, diagrama e as decisões
 - [ ] Modo demo com dados fictícios, para ver sem login
