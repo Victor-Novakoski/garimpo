@@ -138,26 +138,47 @@ func containsAny(text string, words []string) bool {
 // mode, contract and level words (the same opening posted in several
 // community repos with small title changes).
 func Dedupe(jobs []job.Job) []job.Job {
+	kept, _ := DedupeGroups(jobs)
+	return kept
+}
+
+// DedupeGroups is Dedupe that also says which copies each kept posting
+// stands for: copies maps the Key of a kept job to the Keys of the
+// postings dropped as its duplicates. Whoever tracks a posting over time
+// uses it to know that all those keys are the same opening.
+func DedupeGroups(jobs []job.Job) (kept []job.Job, copies map[string][]string) {
+	type seenTitle struct {
+		tokens map[string]bool
+		key    string
+	}
 	seenKey := make(map[string]bool, len(jobs))
-	byCompany := make(map[string][]map[string]bool)
-	out := make([]job.Job, 0, len(jobs))
+	byCompany := make(map[string][]seenTitle)
+	kept = make([]job.Job, 0, len(jobs))
+	copies = make(map[string][]string)
 	for _, j := range jobs {
 		if seenKey[j.Key()] {
 			continue
 		}
+		seenKey[j.Key()] = true
 		company := Fold(j.Company)
-		var tokens map[string]bool
 		if company != "" {
-			tokens = titleTokens(j.Title, company)
-			if anySimilar(tokens, byCompany[company]) {
+			tokens := titleTokens(j.Title, company)
+			original := ""
+			for _, e := range byCompany[company] {
+				if similar(tokens, e.tokens) {
+					original = e.key
+					break
+				}
+			}
+			if original != "" {
+				copies[original] = append(copies[original], j.Key())
 				continue
 			}
-			byCompany[company] = append(byCompany[company], tokens)
+			byCompany[company] = append(byCompany[company], seenTitle{tokens, j.Key()})
 		}
-		seenKey[j.Key()] = true
-		out = append(out, j)
+		kept = append(kept, j)
 	}
-	return out
+	return kept, copies
 }
 
 // noiseWords say nothing about which opening a title is.
@@ -183,30 +204,25 @@ func titleTokens(title, company string) map[string]bool {
 	return tokens
 }
 
-// anySimilar reports whether tokens matches any earlier title: a Jaccard
+// similar reports whether two titles are the same opening: a Jaccard
 // similarity of at least 0.6, or one title containing the other when the
 // shorter has at least three words.
-func anySimilar(tokens map[string]bool, earlier []map[string]bool) bool {
-	for _, e := range earlier {
-		common := 0
-		for w := range tokens {
-			if e[w] {
-				common++
-			}
-		}
-		union := len(tokens) + len(e) - common
-		if union == 0 {
-			return true
-		}
-		if float64(common)/float64(union) >= 0.6 {
-			return true
-		}
-		shorter := min(len(tokens), len(e))
-		if shorter >= 3 && common == shorter {
-			return true
+func similar(tokens, e map[string]bool) bool {
+	common := 0
+	for w := range tokens {
+		if e[w] {
+			common++
 		}
 	}
-	return false
+	union := len(tokens) + len(e) - common
+	if union == 0 {
+		return true
+	}
+	if float64(common)/float64(union) >= 0.6 {
+		return true
+	}
+	shorter := min(len(tokens), len(e))
+	return shorter >= 3 && common == shorter
 }
 
 // techWords mark a posting as a technology job. Checked against the title
