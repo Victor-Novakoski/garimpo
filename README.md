@@ -17,7 +17,7 @@ Detalhes em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Rodando
 
-Precisa de Go 1.24 ou mais novo.
+Precisa de Go 1.25 ou mais novo.
 
 ```bash
 go run ./cmd/garimpo collect          # coleta e lista as vagas dos últimos 30 dias
@@ -31,6 +31,17 @@ Para filtrar e dar nota, copie `profile.example.yaml` para `profile.yaml` (fica 
 go run ./cmd/garimpo collect -why     # mostra o motivo de cada ponto
 go run ./cmd/garimpo collect -min 45  # só vagas com nota 45 ou mais
 ```
+
+### Nota da IA
+
+Os 30 pontos que faltam vêm de uma IA que lê a vaga inteira e compara com o seu perfil. Ela diz o encaixe (forte, bom, parcial, fraco ou nenhum), o que conta a favor, o que falta e o que destacar na candidatura. Preencha o campo `about` do `profile.yaml` com a sua experiência: é o que ela usa para comparar.
+
+```bash
+go run ./cmd/garimpo collect -ai local -why   # usa o Claude Code da máquina (claude -p) e o seu plano
+go run ./cmd/garimpo collect -ai api -why     # usa a API do Claude, com ANTHROPIC_API_KEY
+```
+
+Por padrão a IA avalia as 20 melhores vagas pela nota das regras (`-ai-top`), com o modelo Haiku (`-ai-model` troca). Cada vaga é avaliada uma vez: a resposta fica em cache e a próxima rodada só avalia o que é novo. Se a IA falhar, a vaga continua na lista com a nota das regras.
 
 Com `GITHUB_TOKEN` definido, a coleta do GitHub usa o limite maior da API.
 

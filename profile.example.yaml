@@ -35,3 +35,10 @@ skills:
   - {name: Docker, points: 2}
   - {name: Next.js, aliases: [nextjs], points: 2}
   - {name: Angular, points: 2}
+
+# Texto livre para a nota da IA (-ai): experiência, anos, projetos, idiomas
+# e o que você procura. Nenhuma regra lê este campo.
+about: |
+  Dev full stack com 3 anos de experiência em Go e React em produção:
+  APIs REST, PostgreSQL e Docker. Procuro trabalho remoto, PJ ou freelance.
+  Inglês intermediário.

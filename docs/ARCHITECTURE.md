@@ -30,7 +30,7 @@ Os cortes são o ponto de partida e mudam depois de duas semanas de uso.
 | --- | --- |
 | Coleta, nota e API | Go, biblioteca padrão + `chi` na API |
 | Banco | Postgres no Supabase, SQL puro com migrações |
-| IA | Interface `Scorer`: API do Claude ou `claude -p` local |
+| IA | Interface `Scorer`: `claude -p` local ou API do Claude pelo SDK oficial |
 | Painel | React + Vite + TypeScript na Vercel |
 | Agendamento | GitHub Actions, cron diário |
 | Acesso | Login só do dono (Supabase Auth); a API não fica aberta |
@@ -51,3 +51,28 @@ O perfil (skills com pontos, o que aceitar, o que preferir, o que evitar) fica n
 Vaga sem nenhuma skill do perfil sai no filtro: é vaga de vendas, dados ou segurança que passou pelo resto das regras.
 
 Vaga sem a informação passa no filtro e ganha poucos pontos daquela parte: melhor ver e descartar do que perder uma vaga boa mal etiquetada.
+
+## Nota da IA (0 a 30)
+
+A IA entra depois do filtro e da nota das regras, só nas melhores vagas (20 por padrão). Ela recebe o perfil e a vaga inteira e devolve um JSON com uma de cinco classes, um resumo, pontos a favor, lacunas e o que destacar na candidatura.
+
+| Classe | Pontos | Quando |
+| --- | --- | --- |
+| forte | 30 | os requisitos principais batem com a experiência central e nenhuma restrição atrapalha |
+| bom | 22 | a maior parte bate; falta algo que se aprende rápido |
+| parcial | 14 | há base em comum, mas falta um requisito importante |
+| fraco | 6 | pouca coisa em comum |
+| nenhum | 0 | outra área, ou uma restrição que o perfil não aceita |
+
+A IA escolhe a classe e o código dá os pontos. Assim ela nunca passa do teto, e uma resposta fora do formato (classe desconhecida, campo a mais, texto solto) é descartada: a vaga fica com a nota das regras e o erro aparece no `-why`.
+
+A interface é uma só (`ai.Scorer`), com duas implementações que usam o mesmo prompt e o mesmo schema:
+
+| Modo | Como | Quem paga |
+| --- | --- | --- |
+| `-ai local` | `claude -p` com `--json-schema`, sem ferramentas, sem MCP, sem arquivos do projeto, numa pasta vazia | o plano do Claude já logado na máquina |
+| `-ai api` | SDK oficial em Go, saída estruturada, só fala com `api.anthropic.com` | `ANTHROPIC_API_KEY` (Haiku: centavos por mês) |
+
+O texto da vaga vem da internet, então vai marcado como dado e o prompt manda ignorar instruções dentro dele. Mesmo que uma vaga engane o modelo, o máximo que ela consegue é a própria classe: 30 pontos, numa vaga que já passou no filtro.
+
+As respostas ficam em cache em disco. A chave junta modelo, prompt, perfil e vaga: mudou qualquer um, a vaga é avaliada de novo. Erro não entra no cache.

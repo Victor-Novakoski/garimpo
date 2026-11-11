@@ -22,7 +22,8 @@ Seis etapas, um PR por etapa para a `develop`. Ao fim da etapa 2 o Garimpo já e
 - [x] Filtro duro e nota determinística com motivos (incluindo país: o Greenhouse traz vagas do México, Argentina e Chile)
 - [ ] Modelo de trabalho das vagas do QuintoAndar e da Wildlife, que hoje saem sem modelo
 - [x] Vaga sem modelo mas com cidade no título ou no local ("[Belo Horizonte]") não deve passar como se fosse remota
-- [ ] Nota com IA atrás da interface `Scorer`
+- [x] Nota com IA atrás da interface `Scorer` (local com `claude -p` e API)
+- [ ] Conjunto de vagas rotuladas à mão para medir a IA e comparar modelos
 - [ ] Job diário no GitHub Actions + resumo no Telegram
 
 ## Etapa 3: banco e API (10 a 15 h)
