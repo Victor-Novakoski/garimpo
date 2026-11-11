@@ -15,7 +15,7 @@ Guia para quem (pessoa ou IA) for mexer neste repositório. Leia antes de começ
 
 ## Stack
 
-- Go 1.24: coleta, nota e API (`cmd/`, `internal/`).
+- Go 1.25: coleta, nota e API (`cmd/`, `internal/`). Dependências: `yaml.v3` e o SDK oficial da Anthropic.
 - PostgreSQL no Supabase (a partir da etapa 3), SQL puro com migrações, sem ORM.
 - React + Vite + TypeScript no `web/` (a partir da etapa 4), deploy na Vercel.
 - GitHub Actions: CI e o job diário de coleta.
@@ -28,6 +28,7 @@ go vet ./...          # análise estática
 gofmt -l .            # tem que sair vazio
 go run ./cmd/garimpo collect          # coleta e lista as vagas
 go run ./cmd/garimpo collect -gupy    # inclui a Gupy (só uso pessoal)
+go run ./cmd/garimpo collect -ai local -why   # soma a nota da IA pelo claude -p
 ```
 
 ## Regras do repositório
@@ -43,20 +44,22 @@ go run ./cmd/garimpo collect -gupy    # inclui a Gupy (só uso pessoal)
 - **Nunca se candidata sozinha.** O Garimpo acha, filtra, dá nota e prepara. O clique final é sempre de uma pessoa.
 - **Sem LinkedIn.** Nada de scraping de LinkedIn nem de site que proíba coleta automatizada. Cada fonte nova é conferida em [docs/SOURCES.md](docs/SOURCES.md) antes de entrar. Fonte cujos termos proíbem agregar (Gupy) só roda como uso pessoal: desligada por padrão, só link para a vaga original e nunca no demo público.
 - **Coleta educada:** só GET, hosts fixos, timeout, limite de tamanho de resposta, intervalo entre pedidos e um `User-Agent` que identifica o projeto.
-- **A IA não manda na regra.** O filtro duro roda antes e a IA não consegue tirar uma vaga dele. A nota da IA tem teto (30 de 100) e saída validada.
+- **A IA não manda na regra.** O filtro duro roda antes e a IA não consegue tirar uma vaga dele nem trazer uma de volta. A IA só escolhe uma de cinco classes; os pontos de cada classe ficam no código, com teto de 30 de 100, e a saída é validada.
+- **Texto de vaga é dado, não instrução.** Vai para a IA marcado como dado, e o modo local roda o `claude -p` sem nenhuma ferramenta, sem MCP e numa pasta vazia.
 - **Nota explicável:** todo ponto da nota tem um motivo legível.
 - **Dados pessoais fora do repositório.** Currículo e perfil reais nunca são commitados; o repositório traz só um perfil de exemplo.
-- **Testes sem rede.** Coletores são testados com respostas salvas em `testdata/`.
+- **Testes sem rede.** Coletores e IA são testados com respostas salvas em `testdata/`, sem chamar modelo nenhum.
 
 ## Estrutura
 
 ```
 cmd/garimpo/          a CLI (garimpo collect)
 internal/job/         o modelo de vaga
-internal/httpx/       o cliente HTTP educado, único caminho para a rede
+internal/httpx/       o cliente HTTP educado, único caminho da coleta para a rede
 internal/normalize/   classificação (modelo, contrato, nível) e duplicadas
 internal/profile/     o perfil (o que aceitar, evitar e quanto vale cada skill)
 internal/score/       filtro duro e nota de 0 a 70 com motivos
+internal/ai/          nota da IA de 0 a 30: interface Scorer, claude -p local e API
 internal/collector/   a interface dos coletores e um pacote por fonte
 docs/                 arquitetura, roadmap, decisões, fontes
 ```
