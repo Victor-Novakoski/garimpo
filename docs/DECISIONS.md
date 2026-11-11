@@ -4,6 +4,9 @@ Registro das escolhas e do porquê. A mais nova em cima.
 
 | Data | Decisão | Por quê |
 | --- | --- | --- |
+| 11/11/2026 | A vaga só sai da lista quando a pessoa marca; aparecer numa rodada não conta como vista | O Victor nem sempre lê a lista inteira. Esconder o que já apareceu faria ele perder vaga boa sem saber |
+| 11/11/2026 | Estados do funil guardados atrás de `tracker.Store`, hoje num arquivo local | Dá para usar já, sem banco. Na etapa 3 o Postgres entra atrás da mesma interface e a CLI não muda |
+| 11/11/2026 | Job diário e Telegram adiados | O Victor vai rodar local por enquanto; avisar só de vaga nova fica mais simples depois que o registro de estados existir |
 | 10/11/2026 | A IA devolve uma classe (forte, bom, parcial, fraco, nenhum) e o código dá os pontos (30, 22, 14, 6, 0) | Um número solto do modelo varia de uma rodada para outra e não dá para validar. Classe fixa é estável, explicável e não passa do teto |
 | 10/11/2026 | Modo local roda `claude -p` sem ferramentas, sem MCP, em modo seguro e numa pasta vazia, com a vaga no stdin | A descrição da vaga é texto de terceiros. Sem ferramenta, uma vaga maliciosa não lê arquivo nem roda comando; só consegue mexer na própria classe. O modo local também tira `ANTHROPIC_API_KEY` do ambiente do `claude`, para usar o plano e não cobrar a API sem querer |
 | 10/11/2026 | Modo API usa o SDK oficial da Anthropic, e o Go sobe para 1.25 | O SDK cuida de retry, erros tipados e saída estruturada, e é o caminho recomendado. Custa a subida de versão do Go e as dependências dele; a coleta segue só com a biblioteca padrão |

@@ -30,6 +30,7 @@ gofmt -l .            # tem que sair vazio
 go run ./cmd/garimpo collect          # coleta e lista as vagas
 go run ./cmd/garimpo collect -gupy    # inclui a Gupy (só uso pessoal)
 go run ./cmd/garimpo collect -ai local -why   # soma a nota da IA pelo claude -p
+go run ./cmd/garimpo mark 12 apliquei         # marca o que foi feito com a vaga #12
 ```
 
 ## Regras do repositório
@@ -49,18 +50,20 @@ go run ./cmd/garimpo collect -ai local -why   # soma a nota da IA pelo claude -p
 - **Texto de vaga é dado, não instrução.** Vai para a IA marcado como dado, e o modo local roda o `claude -p` sem nenhuma ferramenta, sem MCP e numa pasta vazia.
 - **Nota explicável:** todo ponto da nota tem um motivo legível.
 - **Dados pessoais fora do repositório.** Currículo e perfil reais nunca são commitados; o repositório traz só um perfil de exemplo.
+- **A vaga só sai da lista quando a pessoa marca.** Os estados e as regras estão em [docs/FLOW.md](docs/FLOW.md) e valem igual para a CLI, a API e o painel.
 - **Testes sem rede.** Coletores e IA são testados com respostas salvas em `testdata/`, sem chamar modelo nenhum.
 
 ## Estrutura
 
 ```
-cmd/garimpo/          a CLI (garimpo collect)
+cmd/garimpo/          a CLI (collect, mark, note, list, show)
 internal/job/         o modelo de vaga
 internal/httpx/       o cliente HTTP educado, único caminho da coleta para a rede
 internal/normalize/   classificação (modelo, contrato, nível) e duplicadas
 internal/profile/     o perfil (o que aceitar, evitar e quanto vale cada skill)
 internal/score/       filtro duro e nota de 0 a 70 com motivos
 internal/ai/          nota da IA de 0 a 30: interface Scorer, claude -p local e API
+internal/tracker/     o que a pessoa fez com cada vaga: estados do funil, interface Store e arquivo local
 internal/collector/   a interface dos coletores e um pacote por fonte
 docs/                 arquitetura, roadmap, decisões, fontes
 ```

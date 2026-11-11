@@ -39,7 +39,7 @@ Cada vaga também pode ter uma **anotação** livre (com quem falou, faixa salar
 Duas coisas não dependem de você e não são estados:
 
 - **Nova hoje**: a vaga apareceu pela primeira vez nesta rodada. É só uma etiqueta para você ver o que mudou; a vaga continua "nova" amanhã se você não marcar.
-- **Encerrada**: a vaga sumiu da fonte (a empresa fechou a posição). Se ela estava em "nova" ou "vou aplicar", sai da lista do dia com esse aviso. Se você já aplicou, continua no seu acompanhamento.
+- **Saiu da fonte**: a vaga não veio mais na coleta (a empresa fechou a posição, ou a issue ficou velha). Ela deixa de aparecer na lista do dia e fica com esse aviso no `garimpo list`. Se você já aplicou, continua no seu acompanhamento. O aviso só é dado quando a fonte respondeu: fonte fora do ar não apaga vaga.
 
 ## A rodada
 
@@ -77,11 +77,12 @@ A lista do dia mostra, nesta ordem:
 | | Agora: CLI | Etapa 3: API | Etapa 4: painel |
 | --- | --- | --- | --- |
 | Ver a lista do dia | `garimpo collect` | `GET /jobs` | tela inicial |
+| Ver o que está em andamento | `garimpo list` | `GET /jobs?status=saved,applied,interview` | tela de acompanhamento |
 | Ver um estado | `garimpo list apliquei` | `GET /jobs?status=applied` | abas do funil |
 | Ver uma vaga | `garimpo show 12` | `GET /jobs/12` | tela da vaga, com os motivos da nota |
 | Marcar | `garimpo mark 12 apliquei` | `PATCH /jobs/12` | botões na vaga |
 | Anotar | `garimpo note 12 "falei com a Ana"` | `PATCH /jobs/12` | campo na vaga |
-| Onde fica guardado | arquivo na sua máquina, fora do git | Postgres no Supabase | o mesmo banco, pela API |
+| Onde fica guardado | arquivo na pasta de configuração do usuário (`garimpo/vagas.json`), fora do git | Postgres no Supabase | o mesmo banco, pela API |
 
 No código, quem guarda e lê os estados fica atrás de uma interface (`tracker.Store`), do mesmo jeito que a IA fica atrás de `ai.Scorer`. Hoje a implementação é um arquivo; na etapa 3 entra a do Postgres, e a CLI nem percebe a troca. Um comando importa o arquivo local para o banco, para você não perder o que já marcou.
 

@@ -24,7 +24,7 @@ Seis etapas, um PR por etapa para a `develop`. Ao fim da etapa 2 o Garimpo já e
 - [x] Vaga sem modelo mas com cidade no título ou no local ("[Belo Horizonte]") não deve passar como se fosse remota
 - [x] Nota com IA atrás da interface `Scorer` (local com `claude -p` e API)
 - [ ] Conjunto de vagas rotuladas à mão para medir a IA e comparar modelos
-- [ ] Registro local dos estados da vaga e comandos `mark`, `list`, `show` e `note` (veja [FLOW.md](FLOW.md))
+- [x] Registro local dos estados da vaga e comandos `mark`, `list`, `show` e `note` (veja [FLOW.md](FLOW.md))
 - [ ] Job diário no GitHub Actions + resumo no Telegram (adiado: por enquanto roda local)
 
 ## Etapa 3: banco e API (10 a 15 h)
