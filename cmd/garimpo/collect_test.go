@@ -4,12 +4,15 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/victor-novakoski/garimpo/internal/ai"
 	"github.com/victor-novakoski/garimpo/internal/collector"
 	"github.com/victor-novakoski/garimpo/internal/job"
+	"github.com/victor-novakoski/garimpo/internal/profile"
 	"github.com/victor-novakoski/garimpo/internal/score"
 )
 
@@ -97,19 +100,97 @@ func TestParseCollectRejectsExtraArgs(t *testing.T) {
 }
 
 func TestPrintResultsWhy(t *testing.T) {
-	results := []score.Result{{
+	results := withoutAI([]score.Result{{
 		Job:     job.Job{Title: "Dev Go", URL: "https://x/1"},
 		Points:  25,
 		Reasons: []score.Reason{{Points: 15, Text: "pede Go"}},
-	}}
+	}})
 	var out bytes.Buffer
-	if err := printResults(&out, results, false, true); err != nil {
+	if err := printResults(&out, results, score.Max, false, true); err != nil {
 		t.Fatal(err)
 	}
 	for _, want := range []string{"25/70", "Dev Go", "+15 pede Go"} {
 		if !strings.Contains(out.String(), want) {
 			t.Errorf("output %q missing %q", out.String(), want)
 		}
+	}
+	if strings.Contains(out.String(), "IA") {
+		t.Errorf("AI line without -ai: %q", out.String())
+	}
+}
+
+// fakeScorer answers by title, without any model.
+type fakeScorer struct{ err error }
+
+func (fakeScorer) Name() string { return "fake" }
+func (f fakeScorer) Assess(_ context.Context, j job.Job) (ai.Assessment, error) {
+	if f.err != nil {
+		return ai.Assessment{}, f.err
+	}
+	if strings.Contains(j.Title, "React") {
+		return ai.Assessment{Fit: ai.FitStrong, Summary: "bate com o perfil", Gaps: []string{"inglês fluente"}}, nil
+	}
+	return ai.Assessment{Fit: ai.FitWeak, Summary: "stack diferente"}, nil
+}
+
+func useScorer(t *testing.T, s ai.Scorer) {
+	t.Helper()
+	old := newScorer
+	newScorer = func(collectOptions, profile.Profile) ai.Scorer { return s }
+	t.Cleanup(func() { newScorer = old })
+}
+
+func TestAssessReordersAndExplains(t *testing.T) {
+	useScorer(t, fakeScorer{})
+	results := []score.Result{
+		{Job: job.Job{Source: "a", SourceID: "1", Title: "Dev Go"}, Points: 40},
+		{Job: job.Job{Source: "a", SourceID: "2", Title: "Dev React"}, Points: 35},
+		{Job: job.Job{Source: "a", SourceID: "3", Title: "Dev Java"}, Points: 10},
+	}
+	o := collectOptions{ai: "local", aiTop: 2, aiCache: "off"}
+	var log bytes.Buffer
+	ranked := assess(context.Background(), o, profile.Profile{}, results, &log)
+	// React: 35 + 30 = 65; Go: 40 + 6 = 46; Java was not assessed.
+	if ranked[0].Job.Title != "Dev React" || ranked[0].Total != 65 || ranked[1].Total != 46 {
+		t.Fatalf("ranked = %+v", ranked)
+	}
+	if ranked[2].AI != nil || ranked[2].Total != 10 {
+		t.Errorf("job beyond -ai-top was assessed: %+v", ranked[2])
+	}
+	if !strings.Contains(log.String(), "2 avaliadas, 0 com erro") {
+		t.Errorf("log = %q", log.String())
+	}
+	var out bytes.Buffer
+	if err := printResults(&out, ranked, ai.MaxTotal, false, true); err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"65/100", "+30 IA, encaixe forte: bate com o perfil", "falta: inglês fluente", "fora das melhores"} {
+		if !strings.Contains(out.String(), want) {
+			t.Errorf("output missing %q:\n%s", want, out.String())
+		}
+	}
+}
+
+func TestAssessUnavailableKeepsRuleScores(t *testing.T) {
+	useScorer(t, fakeScorer{err: fmt.Errorf("%w: sem login", ai.ErrUnavailable)})
+	results := []score.Result{{Job: job.Job{Title: "Dev Go"}, Points: 40}}
+	var log bytes.Buffer
+	ranked := assess(context.Background(), collectOptions{ai: "local", aiTop: 5, aiCache: "off"}, profile.Profile{}, results, &log)
+	if len(ranked) != 1 || ranked[0].Total != 40 || ranked[0].AI != nil {
+		t.Fatalf("ranked = %+v", ranked)
+	}
+	if !strings.Contains(log.String(), "IA parou") || !strings.Contains(log.String(), "sem login") {
+		t.Errorf("log = %q", log.String())
+	}
+}
+
+func TestParseCollectAI(t *testing.T) {
+	if _, err := parseCollect([]string{"-ai", "gpt"}, &bytes.Buffer{}); err == nil {
+		t.Fatal("unknown -ai value accepted")
+	}
+	o, err := parseCollect([]string{"-ai", "local"}, &bytes.Buffer{})
+	if err != nil || o.ai != "local" || o.aiTop != 20 {
+		t.Fatalf("o = %+v, err = %v", o, err)
 	}
 }
 
@@ -127,8 +208,8 @@ func TestLoadProfile(t *testing.T) {
 }
 
 func TestAtLeast(t *testing.T) {
-	rs := []score.Result{{Points: 60}, {Points: 30}}
-	if got := atLeast(rs, 50); len(got) != 1 || got[0].Points != 60 {
+	rs := []ai.Ranked{{Total: 60}, {Total: 30}}
+	if got := atLeast(rs, 50); len(got) != 1 || got[0].Total != 60 {
 		t.Fatalf("atLeast = %v", got)
 	}
 }
