@@ -30,7 +30,7 @@ Seis etapas, um PR por etapa para a `develop`. Ao fim da etapa 2 o Garimpo já e
 ## Etapa 3: banco e API (10 a 15 h)
 
 - [x] Postgres com migrações e o registro de estados atrás da mesma interface do arquivo
-- [ ] Criar o projeto no Supabase e aplicar a migração nele (até aqui foi testado num Postgres local e na CI)
+- [x] Criar o projeto no Supabase e aplicar a migração nele (a primeira coleta real gravou 121 vagas pelo Session pooler)
 - [x] API: listar, detalhar, mudar status e anotar, com os estados do [FLOW.md](FLOW.md)
 - [ ] API: gerar carta
 - [x] Importar o registro local para o banco (`garimpo import`)
