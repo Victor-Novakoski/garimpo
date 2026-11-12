@@ -61,6 +61,7 @@ func TestSyncKeepsNumbersAndStatus(t *testing.T) { eachStore(t, testSyncKeepsNum
 
 func testSyncKeepsNumbersAndStatus(t *testing.T, s Store) {
 	a, b := posting("gh:repo", "1", "Dev Go"), posting("gh:repo", "2", "Dev React")
+	a.WorkMode, a.Contract, a.Seniority, a.Location = job.WorkModeRemote, job.ContractPJ, job.SeniorityMid, "Brasil"
 	got, err := s.Sync(run(day1, Seen{Job: a, Score: 50, Reasons: []string{"+20 Go"}}, Seen{Job: b, Score: 40}))
 	if err != nil {
 		t.Fatal(err)
@@ -88,6 +89,15 @@ func testSyncKeepsNumbersAndStatus(t *testing.T, s Store) {
 	// A negative score keeps the score and the reasons on record.
 	if e := got[2].Entry; e.Number != 1 || e.Status != StatusApplied || e.Score != 50 || len(e.Reasons) != 1 || e.Reasons[0] != "+20 Go" {
 		t.Errorf("status or score lost on sync: %+v", e)
+	}
+	// The facts of the posting are read back from the store, not only
+	// returned by the run.
+	e, err := s.Get(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if e.WorkMode != job.WorkModeRemote || e.Contract != job.ContractPJ || e.Seniority != job.SeniorityMid || e.Location != "Brasil" {
+		t.Errorf("facts of the posting = %+v", e)
 	}
 }
 

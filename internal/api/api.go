@@ -1,6 +1,7 @@
 // Package api serves the job flow over HTTP: the same states and rules of
 // docs/FLOW.md that the command line follows, for the panel to call. It
-// only reads and writes the tracker; collecting stays with the CLI.
+// reads and writes the tracker. It never collects by itself: the panel's
+// button asks a Runner (collect.go) that the command line hands in.
 package api
 
 import (
@@ -68,6 +69,10 @@ type server struct {
 	store tracker.Store
 	now   func() time.Time
 	logf  func(format string, args ...any)
+	// collect runs a collection when the panel asks. Nil when the API
+	// cannot collect, and collectOff tells the person why.
+	collect    *Runner
+	collectOff string
 }
 
 // New returns the API over a store. Every route but /health needs the
@@ -76,11 +81,31 @@ func New(store tracker.Store, auth Authenticator) http.Handler {
 	return newServer(&server{store: store, now: time.Now, logf: log.Printf}, auth)
 }
 
+// Options are what the local panel adds to the API.
+type Options struct {
+	// Collect runs a collection when the panel asks for one. Nil turns the
+	// button off.
+	Collect *Runner
+	// CollectOff tells the person why there is no collecting, when Collect
+	// is nil.
+	CollectOff string
+}
+
+// NewLocal returns the API for the panel that runs on the owner's machine:
+// no token, and only requests that LocalOnly lets through.
+func NewLocal(store tracker.Store, o Options) http.Handler {
+	s := &server{store: store, now: time.Now, logf: log.Printf, collect: o.Collect, collectOff: o.CollectOff}
+	return LocalOnly(newServer(s, anyone{}))
+}
+
 func newServer(s *server, auth Authenticator) http.Handler {
 	private := http.NewServeMux()
 	private.HandleFunc("GET /jobs", s.list)
 	private.HandleFunc("GET /jobs/{number}", s.show)
 	private.HandleFunc("PATCH /jobs/{number}", s.update)
+	private.HandleFunc("GET /funnel", s.funnel)
+	private.HandleFunc("GET /collect", s.collectStatus)
+	private.HandleFunc("POST /collect", s.collectStart)
 
 	root := http.NewServeMux()
 	root.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) {
@@ -101,10 +126,16 @@ func newServer(s *server, auth Authenticator) http.Handler {
 
 // jobView is one posting in a list.
 type jobView struct {
-	Number      int            `json:"number"`
-	Title       string         `json:"title"`
-	Company     string         `json:"company"`
-	URL         string         `json:"url"`
+	Number  int    `json:"number"`
+	Title   string `json:"title"`
+	Company string `json:"company"`
+	URL     string `json:"url"`
+	// Empty when the posting does not say, or was last listed before these
+	// were kept.
+	WorkMode    string         `json:"work_mode"`
+	Contract    string         `json:"contract"`
+	Seniority   string         `json:"seniority"`
+	Location    string         `json:"location"`
 	Status      tracker.Status `json:"status"`
 	StatusLabel string         `json:"status_label"`
 	Note        string         `json:"note"`
@@ -146,6 +177,7 @@ type detailView struct {
 func view(e tracker.Entry, fresh map[int]bool) jobView {
 	return jobView{
 		Number: e.Number, Title: e.Title, Company: e.Company, URL: e.URL,
+		WorkMode: string(e.WorkMode), Contract: string(e.Contract), Seniority: string(e.Seniority), Location: e.Location,
 		Status: e.Status, StatusLabel: e.Status.Label(), Note: e.Note, Score: e.Score,
 		NewToday: fresh[e.Number], Gone: e.Gone,
 		// Always UTC, whatever zone the store or the machine uses.
@@ -345,6 +377,64 @@ func (s *server) update(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	s.detail(w, r, e)
+}
+
+// maxFunnelHistory is how many status changes the funnel answers.
+const maxFunnelHistory = 100
+
+type stageView struct {
+	Status tracker.Status `json:"status"`
+	Label  string         `json:"label"`
+	Count  int            `json:"count"`
+	// Gone is how many of them no longer show up in their source.
+	Gone int `json:"gone"`
+}
+
+type changeView struct {
+	At      time.Time      `json:"at"`
+	Number  int            `json:"number"`
+	Title   string         `json:"title"`
+	Company string         `json:"company"`
+	From    tracker.Status `json:"from"`
+	To      tracker.Status `json:"to"`
+}
+
+// funnel answers GET /funnel: how many postings are in each state, in
+// funnel order, and the latest status changes, newest first.
+func (s *server) funnel(w http.ResponseWriter, r *http.Request) {
+	all, err := s.store.List()
+	if err != nil {
+		s.fail(w, r, err)
+		return
+	}
+	stages := []stageView{}
+	at := map[tracker.Status]int{}
+	for i, status := range tracker.Statuses() {
+		stages = append(stages, stageView{Status: status, Label: status.Label()})
+		at[status] = i
+	}
+	history := []changeView{}
+	var lastRun *time.Time
+	for _, e := range all {
+		if i, known := at[e.Status]; known {
+			stages[i].Count++
+			if e.Gone {
+				stages[i].Gone++
+			}
+		}
+		for _, ev := range e.History {
+			history = append(history, changeView{At: ev.At.UTC(), Number: e.Number, Title: e.Title, Company: e.Company, From: ev.From, To: ev.To})
+		}
+		if lastRun == nil || e.LastSeen.After(*lastRun) {
+			seen := e.LastSeen.UTC()
+			lastRun = &seen
+		}
+	}
+	slices.SortStableFunc(history, func(a, b changeView) int { return b.At.Compare(a.At) })
+	if len(history) > maxFunnelHistory {
+		history = history[:maxFunnelHistory]
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"total": len(all), "stages": stages, "history": history, "last_run": lastRun})
 }
 
 // fail answers an error from the store. Only "not found" is told to the

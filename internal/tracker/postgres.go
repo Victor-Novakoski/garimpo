@@ -45,7 +45,7 @@ func statusNames(statuses []Status) []string {
 // load reads entries with their keys and history, ordered by number. With
 // numbers it reads only those; with statuses, only the ones in them.
 func load(ctx context.Context, q querier, numbers []int32, statuses []Status) ([]Entry, error) {
-	const cols = `select number, status, note, title, company, url, score, reasons, first_seen, last_seen, gone from entries`
+	const cols = `select number, status, note, title, company, url, score, reasons, first_seen, last_seen, gone, work_mode, contract, seniority, location from entries`
 	var (
 		rows pgx.Rows
 		err  error
@@ -63,7 +63,8 @@ func load(ctx context.Context, q querier, numbers []int32, statuses []Status) ([
 	}
 	entries, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (Entry, error) {
 		var e Entry
-		err := row.Scan(&e.Number, &e.Status, &e.Note, &e.Title, &e.Company, &e.URL, &e.Score, &e.Reasons, &e.FirstSeen, &e.LastSeen, &e.Gone)
+		err := row.Scan(&e.Number, &e.Status, &e.Note, &e.Title, &e.Company, &e.URL, &e.Score, &e.Reasons, &e.FirstSeen, &e.LastSeen, &e.Gone,
+			&e.WorkMode, &e.Contract, &e.Seniority, &e.Location)
 		if len(e.Reasons) == 0 {
 			e.Reasons = nil
 		}
@@ -156,13 +157,15 @@ func loadBook(ctx context.Context, tx pgx.Tx) (book, error) {
 }
 
 const upsertEntry = `
-insert into entries (number, status, note, title, company, url, score, reasons, first_seen, last_seen, gone)
-values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+insert into entries (number, status, note, title, company, url, score, reasons, first_seen, last_seen, gone, work_mode, contract, seniority, location)
+values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 on conflict (number) do update set
 	status = excluded.status, note = excluded.note, title = excluded.title,
 	company = excluded.company, url = excluded.url, score = excluded.score,
 	reasons = excluded.reasons, first_seen = excluded.first_seen,
-	last_seen = excluded.last_seen, gone = excluded.gone`
+	last_seen = excluded.last_seen, gone = excluded.gone,
+	work_mode = excluded.work_mode, contract = excluded.contract,
+	seniority = excluded.seniority, location = excluded.location`
 
 // A key belongs to one entry. When a run says a posting that had its own
 // entry is a copy of another, lookups by that key follow the newer answer.
@@ -180,7 +183,8 @@ func queueEntry(b *pgx.Batch, e Entry) {
 		reasons = []string{}
 	}
 	b.Queue(upsertEntry, e.Number, string(e.Status), e.Note, e.Title, e.Company, e.URL,
-		e.Score, reasons, e.FirstSeen, e.LastSeen, e.Gone)
+		e.Score, reasons, e.FirstSeen, e.LastSeen, e.Gone,
+		string(e.WorkMode), string(e.Contract), string(e.Seniority), e.Location)
 	for _, k := range e.Keys {
 		b.Queue(upsertKey, k, e.Number)
 	}

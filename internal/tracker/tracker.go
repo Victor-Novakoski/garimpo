@@ -101,8 +101,15 @@ type Entry struct {
 	Title   string   `json:"title"`
 	Company string   `json:"company,omitempty"`
 	URL     string   `json:"url"`
-	Status  Status   `json:"status"`
-	Note    string   `json:"note,omitempty"`
+	// Where, how and at what level, as the last run classified the
+	// posting. They are facts of the posting, kept so a list can show them
+	// without reading its text.
+	WorkMode  job.WorkMode  `json:"work_mode,omitempty"`
+	Contract  job.Contract  `json:"contract,omitempty"`
+	Seniority job.Seniority `json:"seniority,omitempty"`
+	Location  string        `json:"location,omitempty"`
+	Status    Status        `json:"status"`
+	Note      string        `json:"note,omitempty"`
 	// Score is the total from the last run that listed it. It is only
 	// informative: the score is recomputed on every run.
 	Score int `json:"score"`

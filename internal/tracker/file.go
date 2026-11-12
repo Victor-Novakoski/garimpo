@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 )
 
@@ -14,6 +15,9 @@ import (
 // read and written whole: a job search has a few hundred entries.
 type File struct {
 	path string
+	// mu keeps one read-change-write at a time inside a process: the panel
+	// marks postings while a collection it started is still running.
+	mu sync.Mutex
 }
 
 // DefaultPath is the tracker file in the user's config directory, outside
@@ -62,6 +66,8 @@ func (f *File) save(d book) error {
 }
 
 func (f *File) Sync(run Run) ([]Synced, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	d, err := f.load()
 	if err != nil {
 		return nil, err
@@ -71,6 +77,8 @@ func (f *File) Sync(run Run) ([]Synced, error) {
 }
 
 func (f *File) update(number int, change func(*Entry)) (Entry, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	d, err := f.load()
 	if err != nil {
 		return Entry{}, err

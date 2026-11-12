@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -33,7 +34,7 @@ func seen(id, title string, score int) tracker.Seen {
 	}
 }
 
-func sync(t *testing.T, store tracker.Store, at time.Time, listed ...tracker.Seen) {
+func syncRun(t *testing.T, store tracker.Store, at time.Time, listed ...tracker.Seen) {
 	t.Helper()
 	run := tracker.Run{At: at, Listed: listed, Present: map[string]bool{}, Sources: map[string]bool{"s": true}}
 	for _, s := range listed {
@@ -122,8 +123,8 @@ func TestTheFlowOverHTTP(t *testing.T) { stores(t, testTheFlowOverHTTP) }
 func testTheFlowOverHTTP(t *testing.T, store tracker.Store) {
 	c := newClient(t, store)
 	// Day 1: four postings. Day 2: #4 left its source and #5 arrived.
-	sync(t, store, day1, seen("1", "Dev Go", 50), seen("2", "Dev React", 60), seen("3", "Dev Java", 30), seen("4", "Dev PHP", 20))
-	sync(t, store, day2, seen("1", "Dev Go", 50), seen("2", "Dev React", 60), seen("3", "Dev Java", 30), seen("5", "Dev Node", 55))
+	syncRun(t, store, day1, seen("1", "Dev Go", 50), seen("2", "Dev React", 60), seen("3", "Dev Java", 30), seen("4", "Dev PHP", 20))
+	syncRun(t, store, day2, seen("1", "Dev Go", 50), seen("2", "Dev React", 60), seen("3", "Dev Java", 30), seen("5", "Dev Node", 55))
 
 	// An empty list is a list, not null.
 	if code, out := c.do("GET", "/jobs?status=interview", ""); code != 200 || out["jobs"] == nil || len(out["jobs"].([]any)) != 0 {
@@ -196,7 +197,7 @@ func testTheFlowOverHTTP(t *testing.T, store tracker.Store) {
 
 func TestBadRequests(t *testing.T) {
 	store := tracker.OpenFile(filepath.Join(t.TempDir(), "vagas.json"))
-	sync(t, store, day1, seen("1", "Dev Go", 50))
+	syncRun(t, store, day1, seen("1", "Dev Go", 50))
 	c := newClient(t, store)
 	for _, tc := range []struct {
 		method, path, body string
@@ -239,7 +240,7 @@ func TestBadRequests(t *testing.T) {
 
 func TestOnlyTheOwnerGetsIn(t *testing.T) {
 	store := tracker.OpenFile(filepath.Join(t.TempDir(), "vagas.json"))
-	sync(t, store, day1, seen("1", "Dev Go", 50))
+	syncRun(t, store, day1, seen("1", "Dev Go", 50))
 	c := newClient(t, store)
 	for _, token := range []string{"", "errado", secret + "x", secret[:len(secret)-1]} {
 		c.token = token
@@ -304,5 +305,197 @@ func TestStoreErrorsStayInTheLog(t *testing.T) {
 	}
 	if !strings.Contains(logged, "supabase") {
 		t.Errorf("the cause was not logged: %q", logged)
+	}
+}
+
+func TestListShowsTheFactsOfThePosting(t *testing.T) { stores(t, testListShowsTheFactsOfThePosting) }
+
+func testListShowsTheFactsOfThePosting(t *testing.T, store tracker.Store) {
+	s := seen("1", "Dev Go", 50)
+	s.Job.Contract, s.Job.Seniority, s.Job.Location = job.ContractPJ, job.SeniorityMid, "Brasil"
+	syncRun(t, store, day1, s)
+	_, out := newClient(t, store).do("GET", "/jobs", "")
+	got := out["jobs"].([]any)[0].(map[string]any)
+	if got["work_mode"] != "remote" || got["contract"] != "pj" || got["seniority"] != "mid" || got["location"] != "Brasil" {
+		t.Errorf("facts of the posting = %v", got)
+	}
+}
+
+func TestFunnel(t *testing.T) { stores(t, testFunnel) }
+
+func testFunnel(t *testing.T, store tracker.Store) {
+	c := newClient(t, store)
+	if code, out := c.do("GET", "/funnel", ""); code != 200 || out["last_run"] != nil || len(out["history"].([]any)) != 0 || len(out["stages"].([]any)) != 5 {
+		t.Fatalf("empty funnel = %d %v", code, out)
+	}
+	// Day 1: four postings. Day 2: #4 left its source.
+	syncRun(t, store, day1, seen("1", "Dev Go", 50), seen("2", "Dev React", 60), seen("3", "Dev Java", 30), seen("4", "Dev PHP", 20))
+	syncRun(t, store, day2, seen("1", "Dev Go", 50), seen("2", "Dev React", 60), seen("3", "Dev Java", 30))
+	for _, step := range []struct {
+		number int
+		to     tracker.Status
+		at     time.Time
+	}{{1, tracker.StatusApplied, day2}, {2, tracker.StatusSaved, day2.Add(time.Hour)}, {1, tracker.StatusInterview, day3}} {
+		if _, err := store.Mark(step.number, step.to, step.at); err != nil {
+			t.Fatal(err)
+		}
+	}
+	code, out := c.do("GET", "/funnel", "")
+	if code != 200 || jsonNumber(out["total"]) != "4" {
+		t.Fatalf("funnel = %d %v", code, out)
+	}
+	var got []string
+	for _, v := range out["stages"].([]any) {
+		stage := v.(map[string]any)
+		got = append(got, stage["label"].(string)+" "+jsonNumber(stage["count"])+"/"+jsonNumber(stage["gone"]))
+	}
+	if want := "nova 2/1|vou aplicar 1/0|apliquei 0/0|entrevista 1/0|descartada 0/0"; strings.Join(got, "|") != want {
+		t.Errorf("stages = %q, want %q", strings.Join(got, "|"), want)
+	}
+	// The history is of every posting, newest first.
+	history := out["history"].([]any)
+	if len(history) != 3 {
+		t.Fatalf("history = %v", history)
+	}
+	if first := history[0].(map[string]any); first["to"] != "interview" || first["from"] != "applied" || jsonNumber(first["number"]) != "1" || first["title"] != "Dev Go" {
+		t.Errorf("newest change = %v", first)
+	}
+	if last := history[2].(map[string]any); last["to"] != "applied" {
+		t.Errorf("oldest change = %v", last)
+	}
+	if at, _ := time.Parse(time.RFC3339, out["last_run"].(string)); !at.Equal(day2) {
+		t.Errorf("last_run = %v, want the latest run", out["last_run"])
+	}
+}
+
+// localDo calls the API of the local panel with the headers given.
+func localDo(t *testing.T, h http.Handler, method, path, host string, headers map[string]string) (int, map[string]any) {
+	t.Helper()
+	req := httptest.NewRequest(method, path, nil)
+	req.Host = host
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	var out map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &out); err != nil {
+		t.Fatalf("%s %s: not JSON: %q", method, path, rec.Body.String())
+	}
+	return rec.Code, out
+}
+
+func TestLocalPanelNeedsNoTokenButOnlyServesItsOwnPage(t *testing.T) {
+	store := tracker.OpenFile(filepath.Join(t.TempDir(), "vagas.json"))
+	syncRun(t, store, day1, seen("1", "Dev Go", 50))
+	h := NewLocal(store, Options{})
+	const host = "127.0.0.1:8080"
+	for name, c := range map[string]struct {
+		method, host string
+		headers      map[string]string
+		want         int
+	}{
+		"curl on the machine":           {"GET", host, nil, 200},
+		"the panel reading":             {"GET", host, map[string]string{"Sec-Fetch-Site": "same-origin"}, 200},
+		"the panel by the name":         {"GET", "localhost:8080", map[string]string{"Origin": "http://localhost:8080", "Sec-Fetch-Site": "same-origin"}, 200},
+		"ipv6 loopback":                 {"GET", "[::1]:8080", nil, 200},
+		"the address typed":             {"GET", host, map[string]string{"Sec-Fetch-Site": "none"}, 200},
+		"the panel collecting":          {"POST", host, map[string]string{"Origin": "http://" + host, "Sec-Fetch-Site": "same-origin"}, 409},
+		"a site reading":                {"GET", host, map[string]string{"Sec-Fetch-Site": "cross-site"}, 403},
+		"a site posting":                {"POST", host, map[string]string{"Origin": "https://evil.example", "Sec-Fetch-Site": "cross-site"}, 403},
+		"a site, old browser":           {"POST", host, map[string]string{"Origin": "https://evil.example"}, 403},
+		"another port of the machine":   {"POST", host, map[string]string{"Origin": "http://127.0.0.1:3000"}, 403},
+		"same-site is not same-origin":  {"GET", host, map[string]string{"Sec-Fetch-Site": "same-site"}, 403},
+		"a post nobody typed":           {"POST", host, map[string]string{"Sec-Fetch-Site": "none"}, 403},
+		"dns rebinding":                 {"GET", "evil.example:8080", nil, 403},
+		"rebinding with its own origin": {"POST", "evil.example:8080", map[string]string{"Origin": "http://evil.example:8080", "Sec-Fetch-Site": "same-origin"}, 403},
+		"another machine by address":    {"GET", "192.168.0.10:8080", nil, 403},
+		"null origin":                   {"POST", host, map[string]string{"Origin": "null"}, 403},
+	} {
+		path := "/jobs"
+		if c.method == "POST" {
+			path = "/collect"
+		}
+		code, out := localDo(t, h, c.method, path, c.host, c.headers)
+		if code != c.want {
+			t.Errorf("%s: %s %s = %d %v, want %d", name, c.method, path, code, out, c.want)
+		}
+		if c.want == 403 && (out["jobs"] != nil || out["error"] == nil) {
+			t.Errorf("%s: refused request leaked: %v", name, out)
+		}
+	}
+}
+
+func TestCollectFromThePanel(t *testing.T) {
+	store := tracker.OpenFile(filepath.Join(t.TempDir(), "vagas.json"))
+	const host = "127.0.0.1:8080"
+
+	// Without a runner the button is off and says why.
+	off := NewLocal(store, Options{CollectOff: "sem perfil"})
+	if code, out := localDo(t, off, "GET", "/collect", host, nil); code != 200 || out["available"] != false || out["reason"] != "sem perfil" {
+		t.Errorf("status without a runner = %d %v", code, out)
+	}
+	if code, _ := localDo(t, off, "POST", "/collect", host, nil); code != 409 {
+		t.Errorf("start without a runner = %d, want 409", code)
+	}
+	// The API behind the token does not collect either.
+	if code, out := newClient(t, store).do("POST", "/collect", ""); code != 409 || out["available"] != false {
+		t.Errorf("start on the token API = %d %v", code, out)
+	}
+
+	release := make(chan struct{})
+	fail := false
+	runner := NewRunner(context.Background(), func(_ context.Context, log io.Writer) error {
+		io.WriteString(log, "fonte-a 3 vagas\n")
+		<-release
+		if fail {
+			return errors.New("a coleta falhou")
+		}
+		syncRun(t, store, day1, seen("1", "Dev Go", 50))
+		return nil
+	})
+	h := NewLocal(store, Options{Collect: runner})
+	if code, out := localDo(t, h, "GET", "/collect", host, nil); code != 200 || out["available"] != true || out["running"] != false || out["started_at"] != nil {
+		t.Fatalf("status before = %d %v", code, out)
+	}
+	if code, out := localDo(t, h, "POST", "/collect", host, nil); code != 202 || out["running"] != true {
+		t.Fatalf("start = %d %v", code, out)
+	}
+	// One at a time.
+	if code, out := localDo(t, h, "POST", "/collect", host, nil); code != 409 || out["running"] != true {
+		t.Errorf("second start = %d %v, want 409", code, out)
+	}
+	close(release)
+	runner.Wait()
+	code, out := localDo(t, h, "GET", "/collect", host, nil)
+	if code != 200 || out["running"] != false || out["finished_at"] == nil || out["error"] != nil || out["log"] != "fonte-a 3 vagas\n" {
+		t.Errorf("status after = %d %v", code, out)
+	}
+	if _, out := localDo(t, h, "GET", "/jobs", host, nil); len(out["jobs"].([]any)) != 1 {
+		t.Errorf("the collection did not reach the list: %v", out)
+	}
+
+	// A failed collection says so, and the next one starts clean.
+	release, fail = make(chan struct{}), true
+	close(release)
+	localDo(t, h, "POST", "/collect", host, nil)
+	runner.Wait()
+	if _, out := localDo(t, h, "GET", "/collect", host, nil); out["error"] != "a coleta falhou" || out["running"] != false {
+		t.Errorf("status after a failure = %v", out)
+	}
+}
+
+func TestRunLogKeepsTheEnd(t *testing.T) {
+	runner := NewRunner(context.Background(), func(_ context.Context, log io.Writer) error {
+		for range 3 {
+			log.Write([]byte(strings.Repeat("a", maxRunLog/2)))
+		}
+		io.WriteString(log, "fim")
+		return nil
+	})
+	runner.Start()
+	runner.Wait()
+	if got := runner.view().Log; len(got) != maxRunLog || !strings.HasSuffix(got, "afim") {
+		t.Errorf("log has %d bytes, ending %q", len(got), got[len(got)-4:])
 	}
 }

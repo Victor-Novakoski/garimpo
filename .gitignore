@@ -15,3 +15,11 @@ data/private/
 .idea/
 .vscode/
 .DS_Store
+
+# painel: dependências e o build (gerado pelo `npm run build`, embutido no binário)
+node_modules/
+/web/dist/
+/web/coverage/
+*.tsbuildinfo
+/internal/panel/dist/*
+!/internal/panel/dist/.gitkeep
