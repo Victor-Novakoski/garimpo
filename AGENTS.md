@@ -18,8 +18,8 @@ Guia para quem (pessoa ou IA) for mexer neste repositório. Leia antes de começ
 
 - Go 1.25: coleta, nota e API (`cmd/`, `internal/`). Dependências: `yaml.v3`, o SDK oficial da Anthropic e o driver `pgx`.
 - PostgreSQL no Supabase, SQL puro com migrações em `internal/db/migrations/`, sem ORM.
-- React + Vite + TypeScript no `web/` (a partir da etapa 4), deploy na Vercel.
-- GitHub Actions: CI e o job diário de coleta.
+- React + Vite + TypeScript no `web/`: o painel. Não tem deploy: o build é embutido no binário e o `garimpo serve` serve tudo em `127.0.0.1`. Sem biblioteca de rotas, de estado ou de componentes.
+- GitHub Actions: CI (Go e `web/`).
 
 ## Comandos
 
@@ -33,7 +33,15 @@ go run ./cmd/garimpo collect -ai local -why   # soma a nota da IA pelo claude -p
 go run ./cmd/garimpo mark 12 apliquei         # marca o que foi feito com a vaga #12
 go run ./cmd/garimpo migrate                  # cria as tabelas no banco de GARIMPO_DATABASE_URL
 go run ./cmd/garimpo import                   # copia o arquivo local para o banco
-go run ./cmd/garimpo-api                      # a API, com o token em GARIMPO_API_TOKEN
+go run ./cmd/garimpo-api                      # a API avulsa, com o token em GARIMPO_API_TOKEN
+
+# painel
+npm --prefix web ci
+npm --prefix web run build                    # gera internal/panel/dist, que o Go embute
+go run ./cmd/garimpo serve                    # API + painel em http://127.0.0.1:8080
+npm --prefix web run lint                     # oxlint
+npm --prefix web test                         # vitest
+npm --prefix web run dev                      # Vite, repassando /api para um `garimpo serve` ao lado
 
 # testes do banco: precisam de um Postgres de teste (sem a variável, são pulados)
 GARIMPO_TEST_DATABASE_URL='postgres://garimpo:garimpo@localhost:5432/garimpo_test' go test -race ./...
@@ -43,7 +51,7 @@ GARIMPO_TEST_DATABASE_URL='postgres://garimpo:garimpo@localhost:5432/garimpo_tes
 
 - Branch principal de trabalho: `develop`. Todo PR vai para a `develop`, nunca para a `main`.
 - Commits com a identidade do Victor (`Victor-Novakoski`). Sem trailer `Co-Authored-By` de IA, sem link de sessão, sem assinatura de IA.
-- Um commit por tarefa, com `gofmt`, `go vet` e testes passando entre eles.
+- Um commit por tarefa, com `gofmt`, `go vet` e testes passando entre eles. Mexeu no `web/`: lint, testes e build dele também.
 - Textos para pessoas (docs, mensagens da CLI, painel) em português do Brasil. Código, nomes de arquivo e identificadores em inglês.
 - Sem serviço pago além da IA. Hospedagem, banco e agendamento ficam nos planos grátis.
 
@@ -62,12 +70,16 @@ GARIMPO_TEST_DATABASE_URL='postgres://garimpo:garimpo@localhost:5432/garimpo_tes
 - **Segredo só no ambiente.** A URL do banco e o token da API vêm de variável de ambiente: nunca em flag, em arquivo do repositório, em log ou em mensagem de erro.
 - **Tabela nova nasce com RLS ligado.** O Supabase expõe o schema `public` pela API REST dele; sem RLS, a chave pública leria os dados.
 - **Migração aplicada não se edita.** Mudança no banco é um arquivo novo, com o número seguinte.
+- **O painel não sai da máquina.** O `serve` só escuta em `127.0.0.1` (não existe flag de endereço) e toda rota passa pelo `api.LocalOnly`. Nada de deploy, login ou CORS aberto.
+- **Texto de vaga na tela é texto.** Nunca `dangerouslySetInnerHTML`; link de vaga só `http`/`https` (`safeUrl`).
+- **O pedido de coleta não leva opção.** O que a coleta faz vem das flags do `serve`, nunca do HTTP.
+- **O build do painel não vai para o git.** `internal/panel/dist/` guarda só o `.gitkeep`.
 
 ## Estrutura
 
 ```
-cmd/garimpo/          a CLI (collect, mark, note, list, show, migrate, import)
-cmd/garimpo-api/      o servidor da API
+cmd/garimpo/          a CLI (collect, serve, mark, note, list, show, migrate, import)
+cmd/garimpo-api/      a API avulsa, com token
 internal/job/         o modelo de vaga
 internal/httpx/       o cliente HTTP educado, único caminho da coleta para a rede
 internal/normalize/   classificação (modelo, contrato, nível) e duplicadas
@@ -76,7 +88,9 @@ internal/score/       filtro duro e nota de 0 a 70 com motivos
 internal/ai/          nota da IA de 0 a 30: interface Scorer, claude -p local e API
 internal/tracker/     o que a pessoa fez com cada vaga: estados do funil, regras, interface Store, arquivo local e Postgres
 internal/db/          conexão com o Postgres e as migrações SQL
-internal/api/         as rotas HTTP (listar, ver, marcar, anotar) e o token do dono
+internal/api/         as rotas HTTP (listar, ver, marcar, anotar, funil, coletar), o token do dono e a trava do painel local
+internal/panel/       o build do painel embutido no binário
+web/                  o painel em React (src/views as telas, src/api.ts as chamadas, src/format.ts textos e datas)
 internal/collector/   a interface dos coletores e um pacote por fonte
 docs/                 arquitetura, roadmap, decisões, fontes
 ```

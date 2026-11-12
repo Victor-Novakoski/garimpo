@@ -35,19 +35,24 @@ Seis etapas, um PR por etapa para a `develop`. Ao fim da etapa 2 o Garimpo já e
 - [ ] API: gerar carta
 - [x] Importar o registro local para o banco (`garimpo import`)
 - [x] Proteção da API por token do dono
-- [ ] Login do painel com Supabase Auth (entra junto com o painel)
-- [ ] Hospedar a API (por enquanto roda na máquina)
+- [x] ~~Login do painel com Supabase Auth~~ e ~~hospedar a API~~: saíram do plano, o painel roda só na máquina (veja [DECISIONS.md](DECISIONS.md))
 - [ ] Cache das notas da IA no banco (hoje é um arquivo)
 
-## Etapa 4: painel (15 a 20 h)
+## Etapa 4: painel local (15 a 20 h)
 
-- [ ] Lista por nota, filtros, detalhe com motivos
-- [ ] Funil: nova, vou aplicar, apliquei, entrevista, descartada
-- [ ] Carta e pontos do currículo para destacar
-- [ ] Deploy na Vercel, testado a 390 px
+O painel roda só na máquina do Victor: sem deploy, sem login. O Supabase segue como banco.
+
+- [x] `garimpo serve`: a API e o painel num comando só, em `127.0.0.1`
+- [x] Lista do dia por nota, com estado, empresa, modelo e link; filtro por estado e busca
+- [x] Tela da vaga: motivos da nota, leitura da IA (com o que destacar na candidatura), anotação e histórico
+- [x] Marcar com um clique (vou aplicar, apliquei, entrevista, descartada), com desfazer
+- [x] Funil com a contagem de cada estado e as últimas mudanças
+- [x] Botão para rodar a coleta pelo painel
+- [x] Testado a 390 px, claro e escuro; CI cobrindo o `web/`
+- [ ] Carta de apresentação (depende da rota de gerar carta, da etapa 3)
 
 ## Etapa 5: vitrine (5 a 8 h)
 
 - [x] Coletor do Lever e mais empresas no Greenhouse (adiantado: 16 empresas no Greenhouse e 3 no Lever)
 - [ ] README com prints, diagrama e as decisões
-- [ ] Modo demo com dados fictícios, para ver sem login
+- [ ] Modo demo com dados fictícios, para mostrar o painel sem os dados reais

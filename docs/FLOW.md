@@ -74,15 +74,17 @@ A lista do dia mostra, nesta ordem:
 
 ## As três telas do mesmo fluxo
 
-| | CLI | API | Etapa 4: painel |
+| | CLI | API | Painel (`garimpo serve`) |
 | --- | --- | --- | --- |
-| Ver a lista do dia | `garimpo collect` | `GET /jobs` | tela inicial |
-| Ver o que está em andamento | `garimpo list` | `GET /jobs?status=saved,applied,interview` | tela de acompanhamento |
-| Ver um estado | `garimpo list apliquei` | `GET /jobs?status=applied` | abas do funil |
-| Ver uma vaga | `garimpo show 12` | `GET /jobs/12` | tela da vaga, com os motivos da nota |
-| Marcar | `garimpo mark 12 apliquei` | `PATCH /jobs/12` | botões na vaga |
+| Coletar | `garimpo collect` | `POST /collect` (só no painel local) | botão "Buscar vagas" |
+| Ver a lista do dia | `garimpo collect` | `GET /jobs` | tela inicial, "Lista do dia" |
+| Ver o que está em andamento | `garimpo list` | `GET /jobs?status=interview,applied,saved` | filtro "Em andamento" |
+| Ver um estado | `garimpo list apliquei` | `GET /jobs?status=applied` | filtros por estado, e o funil |
+| Ver uma vaga | `garimpo show 12` | `GET /jobs/12` | tela da vaga, com os motivos da nota e a leitura da IA |
+| Marcar | `garimpo mark 12 apliquei` | `PATCH /jobs/12` | botões na lista (com desfazer) e na vaga |
 | Anotar | `garimpo note 12 "falei com a Ana"` | `PATCH /jobs/12` | campo na vaga |
-| Onde fica guardado | arquivo na pasta de configuração do usuário (`garimpo/vagas.json`), fora do git, ou o Postgres | o mesmo registro da CLI | o mesmo banco, pela API |
+| Ver o funil | `garimpo list tudo` | `GET /funnel` | tela "Funil": contagem por estado e últimas mudanças |
+| Onde fica guardado | arquivo na pasta de configuração do usuário (`garimpo/vagas.json`), fora do git, ou o Postgres | o mesmo registro da CLI | o mesmo registro, pela API |
 
 No código, quem guarda e lê os estados fica atrás de uma interface (`tracker.Store`), do mesmo jeito que a IA fica atrás de `ai.Scorer`. Há duas implementações, o arquivo e o Postgres, com as mesmas regras e os mesmos testes; a CLI e a API usam o banco quando `GARIMPO_DATABASE_URL` está definida e o arquivo quando não está. O `garimpo import` copia o arquivo local para o banco, para você não perder o que já marcou.
 
@@ -93,5 +95,5 @@ Na API, `GET /jobs` sem parâmetro é a lista do dia (sem o que saiu da fonte); 
 1. **Registro local e comandos** (`mark`, `list`, `show`, `note`), com a lista do dia já cruzada com os estados.
 2. **Mais fontes**, para a lista ter mais vagas.
 3. **Banco e API** (etapa 3), com os mesmos estados e a importação do arquivo local.
-4. **Painel** (etapa 4), que só chama a API.
+4. **Painel** (etapa 4), que só chama a API e roda na máquina, pelo `garimpo serve`.
 5. **Job diário e Telegram**, que passam a avisar só do que é "nova hoje".
