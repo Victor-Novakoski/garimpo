@@ -26,6 +26,7 @@ const notBuilt = `<!doctype html>
 <p>O Garimpo está no ar, mas este binário foi compilado sem as telas. Na pasta do projeto, rode:</p>
 <pre>npm --prefix web ci
 npm --prefix web run build</pre>
+<p>Precisa de um Node recente: 22.22 em diante, ou 24.15 em diante.</p>
 <p>Depois pare o Garimpo (Ctrl+C) e rode o <code>garimpo serve</code> de novo.</p>
 </body>
 </html>

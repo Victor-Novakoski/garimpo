@@ -35,7 +35,7 @@ go run ./cmd/garimpo migrate                  # cria as tabelas no banco de GARI
 go run ./cmd/garimpo import                   # copia o arquivo local para o banco
 go run ./cmd/garimpo-api                      # a API avulsa, com o token em GARIMPO_API_TOKEN
 
-# painel
+# painel (Node 22.22+ ou 24.15+; o web/.npmrc faz o npm recusar versão mais antiga)
 npm --prefix web ci
 npm --prefix web run build                    # gera internal/panel/dist, que o Go embute
 go run ./cmd/garimpo serve                    # API + painel em http://127.0.0.1:8080
