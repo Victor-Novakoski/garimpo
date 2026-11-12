@@ -50,7 +50,7 @@ Por padrão a IA avalia as 20 melhores vagas pela nota das regras (`-ai-top`), c
 
 O painel mostra a lista do dia, a tela de cada vaga (motivos da nota, leitura da IA, anotação e histórico) e o funil. Ele roda só na sua máquina: um comando sobe a API e as telas em `127.0.0.1`, sem login e sem nada hospedado.
 
-Precisa de Node 22 ou mais novo, só para montar as telas. Faça isso na primeira vez e sempre que atualizar o projeto:
+Precisa de um Node recente, só para montar as telas: o 22 mais novo (22.22 em diante) ou o 24 (24.15 em diante). Com `nvm`, é `nvm install 22`. Com um Node mais antigo o `npm ci` para e avisa, em vez de instalar pela metade. Faça isso na primeira vez e sempre que atualizar o projeto:
 
 ```bash
 npm --prefix web ci
