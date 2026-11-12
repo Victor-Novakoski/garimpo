@@ -2,9 +2,9 @@
 
 Peneira as vagas de tecnologia do Brasil e fica só com o ouro.
 
-O Garimpo coleta vagas de fontes abertas uma vez por dia, descarta o que não serve, dá a cada vaga uma nota explicável de 0 a 100 e entrega as melhores. Ele **não** se candidata sozinho: acha, filtra e prepara, e a decisão é sempre sua.
+O Garimpo coleta vagas de fontes abertas quando você pede, descarta o que não serve, dá a cada vaga uma nota explicável de 0 a 100 e entrega as melhores. Ele **não** se candidata sozinho: acha, filtra e prepara, e a decisão é sempre sua.
 
-> Em construção. Veja o [roadmap](docs/ROADMAP.md).
+> Em construção. O que falta está nas [issues](https://github.com/Victor-Novakoski/garimpo/issues).
 
 ## Como funciona
 
@@ -13,7 +13,13 @@ O Garimpo coleta vagas de fontes abertas uma vez por dia, descarta o que não se
 3. **Nota**: até 70 pontos calculados em código (stack, remoto, modelo de contrato, nível) e até 30 da IA, comparando a vaga com o currículo.
 4. **Entrega**: um painel, na sua máquina, para ver a lista do dia e acompanhar cada vaga até a entrevista.
 
-Detalhes em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+## Documentação
+
+- [Arquitetura](docs/ARCHITECTURE.md): o caminho da vaga, as peças e o banco
+- [Fluxo da vaga](docs/FLOW.md): os estados do funil e as três telas (CLI, API e painel)
+- [Segurança](docs/SECURITY.md): o que protege o painel, o banco e a IA
+- [Fontes](docs/SOURCES.md): de onde vêm as vagas e o que os termos de cada uma dizem
+- [Decisões](docs/decisoes/): cada escolha e o porquê
 
 ## Rodando
 

@@ -44,14 +44,8 @@ Para incluir uma empresa, confira se `boards-api.greenhouse.io/v1/boards/<nome>/
 
 ## O que falta verificar
 
-- [ ] **Sólides e Inhire**: se têm API pública de vagas e o que os termos de candidato dizem.
-- [ ] **Outras plataformas de vagas** usadas pelas empresas que ficaram de fora (Ashby, Workable, Recruitee, Abler): ver se têm API pública e o que os termos dizem.
-- [ ] **GitHub**: limite de 60 pedidos por hora sem token; no Actions usar o `GITHUB_TOKEN`.
+As fontes ainda não conferidas estão nas issues com a etiqueta `ideia`.
 
 ## Regras de coleta
 
-- Só GET, em hosts fixos por coletor.
-- Timeout por pedido e limite de tamanho da resposta.
-- Intervalo entre pedidos à mesma fonte.
-- `User-Agent` que identifica o projeto e aponta para este repositório.
-- Uma execução por dia.
+Todo coletor usa o cliente educado do `internal/httpx` (só GET, hosts fixos, timeout, limite de tamanho, intervalo e `User-Agent` próprio). As regras estão em [`internal/httpx/CLAUDE.md`](../internal/httpx/CLAUDE.md).

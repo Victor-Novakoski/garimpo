@@ -56,7 +56,7 @@ flowchart LR
     I --> F
 ```
 
-Os passos de A a E já existem. O passo F é o que este documento acrescenta: antes de mostrar, o Garimpo cruza as vagas da rodada com o registro do que você já marcou.
+No passo F, antes de mostrar, o Garimpo cruza as vagas da rodada com o registro do que você já marcou.
 
 A lista do dia mostra, nesta ordem:
 
@@ -89,11 +89,3 @@ A lista do dia mostra, nesta ordem:
 No código, quem guarda e lê os estados fica atrás de uma interface (`tracker.Store`), do mesmo jeito que a IA fica atrás de `ai.Scorer`. Há duas implementações, o arquivo e o Postgres, com as mesmas regras e os mesmos testes; a CLI e a API usam o banco quando `GARIMPO_DATABASE_URL` está definida e o arquivo quando não está. O `garimpo import` copia o arquivo local para o banco, para você não perder o que já marcou.
 
 Na API, `GET /jobs` sem parâmetro é a lista do dia (sem o que saiu da fonte); com `?status=` vêm todas as vagas daqueles estados, e as que saíram da fonte trazem `"gone": true`. "Nova hoje" (`new_today`) é a vaga vista pela primeira vez na última rodada. O `PATCH` aceita `status`, `note` ou os dois, e uma anotação vazia apaga a anterior.
-
-## Ordem de construção
-
-1. **Registro local e comandos** (`mark`, `list`, `show`, `note`), com a lista do dia já cruzada com os estados.
-2. **Mais fontes**, para a lista ter mais vagas.
-3. **Banco e API** (etapa 3), com os mesmos estados e a importação do arquivo local.
-4. **Painel** (etapa 4), que só chama a API e roda na máquina, pelo `garimpo serve`.
-5. **Job diário e Telegram**, que passam a avisar só do que é "nova hoje".
