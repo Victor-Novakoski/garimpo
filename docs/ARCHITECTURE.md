@@ -1,17 +1,18 @@
 # Arquitetura
 
-O Garimpo roda na máquina de quem procura a vaga. A coleta em Go busca as fontes, dá nota e grava no Postgres (Supabase); o painel em React lê e marca pela API em Go, servido pelo mesmo comando, só em `127.0.0.1`. Nada fica hospedado nem ligado o tempo todo: o único serviço de fora é o banco, no plano grátis.
+O Garimpo roda na máquina de quem procura a vaga. A coleta em Go busca as fontes, dá nota e grava no Postgres (Supabase); o painel em React lê e marca pela API em Go, servido pelo mesmo comando, só em `127.0.0.1`. Nada fica hospedado nem ligado o tempo todo: o único serviço de fora é o banco, no plano grátis. A coleta roda quando a pessoa pede, pela CLI ou pelo botão do painel.
 
-## Fluxo
+## O caminho da vaga
 
-1. **Coleta**: cada fonte tem um coletor (`internal/collector`) que devolve vagas novas no formato comum (`internal/job`).
-2. **Normalização**: textos limpos, campos padronizados (modelo de trabalho, contrato, nível) e duplicadas entre fontes unidas.
-3. **Filtro duro**: descarta o que não serve. Nada aqui depende de IA.
-4. **Nota determinística (0 a 70)**: stack exigida e desejável com peso por skill, remoto, contrato, nível, faixa salarial quando houver. Cada ponto guarda o motivo.
-5. **Nota da IA (0 a 30)**: compara a vaga com o perfil e devolve uma classe fixa, mais pontos fortes, lacunas e o que destacar. Só roda para o que passou no filtro.
-6. **Gravação**: o registro de cada vaga (estado, anotação, nota e motivos da última rodada) e o texto dela no Postgres, ou num arquivo local quando não há banco configurado.
-7. **Aviso**: resumo das melhores no Telegram.
-8. **Painel**: lista por nota, detalhe com motivos e o funil (nova, vou aplicar, apliquei, entrevista, descartada). Roda local, pelo `garimpo serve`.
+1. **Coleta**: cada fonte tem um coletor (`internal/collector`) que devolve vagas no formato comum (`internal/job`), sempre pelo cliente HTTP educado (`internal/httpx`).
+2. **Normalização** (`internal/normalize`): textos limpos, modelo de trabalho, contrato e nível padronizados, duplicadas entre fontes unidas.
+3. **Filtro duro** (`internal/score`): descarta o que não serve. Nada aqui depende de IA.
+4. **Nota das regras, 0 a 70** (`internal/score`): stack com peso por skill, modelo, contrato e nível. Cada ponto guarda o motivo.
+5. **Nota da IA, 0 a 30** (`internal/ai`): compara a vaga com o perfil e devolve uma classe fixa, mais pontos fortes, lacunas e o que destacar. Só para as melhores que passaram no filtro.
+6. **Registro** (`internal/tracker`): o estado, a anotação, a nota e os motivos da última rodada, no Postgres ou num arquivo local quando não há banco.
+7. **Painel** (`web/`, servido por `garimpo serve`): lista do dia, tela da vaga e funil. Os estados estão no [FLOW.md](FLOW.md).
+
+Ainda não existe: o job diário e o aviso no Telegram (adiados, ver decisão 020).
 
 ## Cortes da nota
 
@@ -22,7 +23,7 @@ O Garimpo roda na máquina de quem procura a vaga. A coleta em Go busca as fonte
 | 70 a 84 | boa |
 | 85 ou mais | prioridade |
 
-Os cortes são o ponto de partida e mudam depois de duas semanas de uso.
+Os cortes são o ponto de partida e mudam depois de duas semanas de uso. Como cada parte soma pontos está em `internal/score/CLAUDE.md` e `internal/ai/CLAUDE.md`.
 
 ## Peças
 
@@ -32,98 +33,24 @@ Os cortes são o ponto de partida e mudam depois de duas semanas de uso.
 | Banco | Postgres no Supabase, SQL puro com migrações, pelo driver `pgx` |
 | IA | Interface `Scorer`: `claude -p` local ou API do Claude pelo SDK oficial |
 | Painel | React + Vite + TypeScript, embutido no binário e servido pelo `garimpo serve` em `127.0.0.1` |
-| Agendamento | Por enquanto na mão (o botão do painel ou o `collect`); o job diário ficou para depois |
-| Acesso | Só o dono, na própria máquina: o painel não tem login e só atende a própria página. A `garimpo-api` avulsa pede um token fixo no cabeçalho `Authorization` |
+| Agendamento | Na mão, pelo botão do painel ou pelo `collect` |
+| Acesso | Só o dono, na própria máquina. A `garimpo-api` avulsa pede um token fixo (ver [SECURITY.md](SECURITY.md)) |
 
 ## Banco e API
 
-O que a pessoa fez com cada vaga fica atrás de uma interface (`tracker.Store`) com duas implementações: um arquivo local e o Postgres. As regras do [FLOW.md](FLOW.md) estão escritas uma vez só (`internal/tracker/rules.go`) e as duas implementações passam pelos mesmos testes. A CLI e a API escolhem pela configuração: com `GARIMPO_DATABASE_URL` definida é o banco, sem ela é o arquivo.
+O registro fica atrás de uma interface (`tracker.Store`) com duas implementações, um arquivo local e o Postgres, que aplicam as mesmas regras e passam pelos mesmos testes. Com `GARIMPO_DATABASE_URL` definida é o banco; sem ela, o arquivo.
 
 | Tabela | O que guarda |
 | --- | --- |
-| `entries` | uma linha por vaga: o número fixo, o estado, a anotação, a nota e os motivos da última rodada, o modelo, o contrato, o nível e o local, primeira e última vez vista, se saiu da fonte |
+| `entries` | uma linha por vaga: o número fixo, o estado, a anotação, a nota e os motivos da última rodada, modelo, contrato, nível, local, primeira e última vez vista, se saiu da fonte |
 | `entry_keys` | as chaves (`fonte:id`) da vaga e das cópias dela em outras fontes |
 | `entry_events` | o histórico: cada troca de estado, com data |
 | `jobs` | o texto da vaga como veio da última coleta, para a tela de detalhe |
 | `runs` | as rodadas: quando, quantas vagas listadas, quantas novas, quais fontes responderam |
 | `schema_migrations` | quais migrações já foram aplicadas |
 
-As migrações são arquivos SQL numerados em `internal/db/migrations/`, embutidos no binário e aplicados pelo `garimpo migrate`, cada um numa transação. Uma rodada grava tudo numa transação e num lote só, e quem escreve pega uma trava do banco antes, para dois processos nunca darem o mesmo número a vagas diferentes.
-
-A API (rotas em `internal/api`) lê e escreve o mesmo registro. A nota que ela mostra é a da última rodada. Erro do banco vai para o log do servidor e nunca para a resposta. Ela sobe de dois jeitos: dentro do `garimpo serve`, sem token e só para o painel local, ou avulsa (`cmd/garimpo-api`), com o token do dono.
-
-Segurança do acesso:
-
-- **Token do dono** na `garimpo-api`, em `GARIMPO_API_TOKEN`, com pelo menos 32 caracteres, comparado em tempo constante. Sem ele toda rota responde 401, exista ou não.
-- **RLS ligado sem policy** em todas as tabelas: a API REST que o Supabase publica para o schema `public` não enxerga nada. O Garimpo entra como dono, pela conexão do Postgres.
-- **A URL do banco só no ambiente.** Nunca em flag (o histórico do terminal e a lista de processos mostram) e nunca em mensagem de erro.
-- **A API escuta só em `127.0.0.1`** por padrão e não fala HTTPS; para sair da máquina precisa de um proxy com HTTPS na frente.
-
-## Painel local
-
-`garimpo serve` sobe um servidor só, sempre em `127.0.0.1` (dá para trocar a porta, não o endereço):
-
-| Caminho | O que responde |
-| --- | --- |
-| `/api/...` | as rotas da API, sem token |
-| o resto | o painel: o build do `web/`, embutido no binário (`internal/panel`) |
-
-O painel não tem login, então a proteção é conferir de onde vem cada pedido (`api.LocalOnly`). Escutar no loopback deixa as outras máquinas de fora, mas qualquer site aberto no navegador consegue chamar `http://127.0.0.1`. Por isso um pedido só passa quando:
-
-- o `Host` é `localhost` ou um endereço de loopback (um site que aponta o próprio domínio para `127.0.0.1` chega com o domínio dele);
-- o `Origin`, quando o navegador manda, é o próprio servidor;
-- o `Sec-Fetch-Site`, quando o navegador manda, diz que o pedido saiu da própria página (ou que o endereço foi digitado, e aí só para leitura).
-
-As páginas saem com uma política de conteúdo que só deixa carregar o que vem do próprio servidor. O texto da vaga vem da internet: é sempre mostrado como texto, e o link da vaga só vira link se for `http` ou `https`.
-
-O botão "Buscar vagas" chama `POST /api/collect`. O pedido não leva nada: a coleta é a mesma do `garimpo collect`, com as opções que o `serve` recebeu ao subir (`-ai local`, `-gupy`...). Roda uma por vez, em segundo plano, e o painel acompanha por `GET /api/collect`. O perfil é lido de novo a cada coleta. Erro do banco numa coleta aparece no terminal, e o painel recebe só uma frase.
-
-| Rota a mais | O que faz |
-| --- | --- |
-| `GET /funnel` | quantas vagas em cada estado (e quantas saíram da fonte), as últimas 100 mudanças de estado e a data da última coleta |
-| `GET /collect` | se dá para coletar, se está rodando, o andamento e o erro da última |
-| `POST /collect` | começa uma coleta; 409 se já tem uma rodando |
-
-O painel (`web/`) é React + Vite + TypeScript, sem biblioteca de rotas nem de estado: as telas ficam no `#` do endereço e, depois de cada mudança, a tela lê de novo do servidor, que é quem sabe as regras. Em desenvolvimento, `npm run dev` sobe o Vite e repassa `/api` para um `garimpo serve` ao lado.
+A API (`internal/api`) lê e escreve o mesmo registro e sobe de dois jeitos: dentro do `garimpo serve`, sem token e só para o painel local, ou avulsa (`cmd/garimpo-api`), com o token do dono. As rotas estão no [README](../README.md#api-avulsa) e no [FLOW.md](FLOW.md).
 
 ## Perfil
 
-O perfil (skills com pontos, o que aceitar, o que preferir, o que evitar) fica num `profile.yaml` fora do repositório. No Actions ele entra por segredo. O formato está em [`profile.example.yaml`](../profile.example.yaml); campo desconhecido é erro, para um erro de digitação nunca desligar uma regra calado.
-
-## Nota determinística (0 a 70)
-
-| Parte | Pontos | Como |
-| --- | --- | --- |
-| Tecnologias | até 40 | pontos de cada skill do perfil: cheios se está no título, nas etiquetas ou na seção de requisitos da descrição; metade se só no resto da descrição (muita empresa cola o mesmo parágrafo de stack em toda vaga). Links não contam |
-| Modelo | 10 / 4 / 2 / 0 | preferido / aceito / não informado (baixo de propósito: vaga sem marcação muitas vezes é presencial) / não informado mas cita uma cidade no título ou no local |
-| Contrato | 10 / 4 / 5 | preferido / aceito / não informado |
-| Nível | 10 / 6 / 0 / 5 | igual / um acima ou abaixo / distante / não informado. Staff, principal e head são `lead`, um nível à parte |
-
-Vaga sem nenhuma skill do perfil sai no filtro: é vaga de vendas, dados ou segurança que passou pelo resto das regras.
-
-Vaga sem a informação passa no filtro e ganha poucos pontos daquela parte: melhor ver e descartar do que perder uma vaga boa mal etiquetada.
-
-## Nota da IA (0 a 30)
-
-A IA entra depois do filtro e da nota das regras, só nas melhores vagas (20 por padrão). Ela recebe o perfil e a vaga inteira e devolve um JSON com uma de cinco classes, um resumo, pontos a favor, lacunas e o que destacar na candidatura.
-
-| Classe | Pontos | Quando |
-| --- | --- | --- |
-| forte | 30 | os requisitos principais batem com a experiência central e nenhuma restrição atrapalha |
-| bom | 22 | a maior parte bate; falta algo que se aprende rápido |
-| parcial | 14 | há base em comum, mas falta um requisito importante |
-| fraco | 6 | pouca coisa em comum |
-| nenhum | 0 | outra área, ou uma restrição que o perfil não aceita |
-
-A IA escolhe a classe e o código dá os pontos. Assim ela nunca passa do teto, e uma resposta fora do formato (classe desconhecida, campo a mais, texto solto) é descartada: a vaga fica com a nota das regras e o erro aparece no `-why`.
-
-A interface é uma só (`ai.Scorer`), com duas implementações que usam o mesmo prompt e o mesmo schema:
-
-| Modo | Como | Quem paga |
-| --- | --- | --- |
-| `-ai local` | `claude -p` com `--json-schema`, sem ferramentas, sem MCP, sem arquivos do projeto, numa pasta vazia | o plano do Claude já logado na máquina |
-| `-ai api` | SDK oficial em Go, saída estruturada, só fala com `api.anthropic.com` | `ANTHROPIC_API_KEY` (Haiku: centavos por mês) |
-
-O texto da vaga vem da internet, então vai marcado como dado e o prompt manda ignorar instruções dentro dele. Mesmo que uma vaga engane o modelo, o máximo que ela consegue é a própria classe: 30 pontos, numa vaga que já passou no filtro.
-
-As respostas ficam em cache em disco. A chave junta modelo, prompt, perfil e vaga: mudou qualquer um, a vaga é avaliada de novo. Erro não entra no cache.
+O perfil (skills com pontos, o que aceitar, preferir e evitar, e o `about` que a IA lê) fica num `profile.yaml` fora do repositório. O formato está em [`profile.example.yaml`](../profile.example.yaml); campo desconhecido é erro, para um erro de digitação nunca desligar uma regra calado.
