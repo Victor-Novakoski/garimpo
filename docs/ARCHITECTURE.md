@@ -49,7 +49,7 @@ O registro fica atrás de uma interface (`tracker.Store`) com três implementaç
 | `runs` | as rodadas: quando, quantas vagas listadas, quantas novas, quais fontes responderam |
 | `schema_migrations` | quais migrações já foram aplicadas |
 
-A API (`internal/api`) lê e escreve o mesmo registro e sobe de dois jeitos: dentro do `garimpo serve`, sem token e só para o painel local, ou avulsa (`cmd/garimpo-api`), com o token do dono. As rotas estão no [README](../README.md#api-avulsa) e no [FLOW.md](FLOW.md).
+A API (`internal/api`) lê e escreve o mesmo registro e sobe de dois jeitos: dentro do `garimpo serve`, sem token e só para o painel local, ou avulsa (`cmd/garimpo-api`), com o token do dono. As rotas estão no [USAGE.md](USAGE.md#api-avulsa) e no [FLOW.md](FLOW.md).
 
 ## Modo demo
 

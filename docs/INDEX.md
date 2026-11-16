@@ -3,7 +3,9 @@
 | Onde | Leia quando... |
 | --- | --- |
 | [`CLAUDE.md`](../CLAUDE.md) | for começar qualquer tarefa: comandos, regras gerais, git |
-| [`README.md`](../README.md) | precisar do passo a passo de uso (CLI, painel, banco, API avulsa) ou for mudar algo que a pessoa vê ao rodar |
+| [`README.md`](../README.md) | precisar da apresentação do projeto (telas, diagrama, stack, decisões principais) ou for mudar o que aparece nela |
+| [`docs/USAGE.md`](USAGE.md) | precisar do passo a passo de uso (CLI, painel, banco, API avulsa) ou for mudar algo que a pessoa vê ao rodar |
+| [`docs/img/`](img/) | for refazer os prints do README: sempre do `garimpo serve -demo`, nunca com dados reais |
 | [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) | precisar da visão geral: o caminho da vaga, as peças, as tabelas e como as duas notas se somam |
 | [`docs/FLOW.md`](FLOW.md) | for mexer em estados da vaga, na lista do dia, em `mark`/`list`/`show`/`note` ou numa tela do painel |
 | [`docs/SECURITY.md`](SECURITY.md) | for mexer em token, banco, painel local, rotas, IA ou texto de vaga na tela, ou revisar se algo está seguro |
