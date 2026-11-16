@@ -19,4 +19,4 @@ O painel em React + Vite + TypeScript. Não tem deploy: o build vai para `intern
 
 ## Ver também
 
-Decisões 034, 035, 038 e 043; [`docs/SECURITY.md`](../docs/SECURITY.md).
+Decisões 034, 035, 038 e 044; [`docs/SECURITY.md`](../docs/SECURITY.md).

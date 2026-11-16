@@ -22,4 +22,4 @@ A nota da IA, de 0 a 30, atrás da interface `Scorer`, e o rascunho da carta de 
 
 ## Ver também
 
-Decisões 007, 015, 016, 017, 018, 019 e 043; [`docs/SECURITY.md`](../../docs/SECURITY.md#texto-de-vaga).
+Decisões 007, 015, 016, 017, 018, 019 e 044; [`docs/SECURITY.md`](../../docs/SECURITY.md#texto-de-vaga).
