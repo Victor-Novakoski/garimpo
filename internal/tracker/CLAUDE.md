@@ -5,7 +5,7 @@ O que a pessoa fez com cada vaga: estados do funil, regras, a interface `Store` 
 ## Regras
 
 - **Regra do fluxo mora só em `rules.go`.** Arquivo, banco e memória carregam as entradas, aplicam a mesma função e gravam o que mudou. Regra nova entra ali e no teste que roda nas duas implementações, nunca em uma só.
-- `Memory` não grava nada e só serve ao modo demo (decisão 043): dado real nunca passa por ela.
+- `Memory` não grava nada e só serve ao modo demo (decisão 044): dado real nunca passa por ela.
 - A vaga só sai da lista quando a pessoa marca; aparecer numa rodada não conta como vista.
 - A identidade é fonte + id na fonte (`job.Key`). O número curto (`#12`) é dado na primeira vez e nunca muda. Vaga repetida em duas fontes é uma só.
 - A nota não é guardada como verdade: é recalculada a cada rodada. O que fica é estado, datas, anotação e os motivos da última rodada.
@@ -18,4 +18,4 @@ O que a pessoa fez com cada vaga: estados do funil, regras, a interface `Store` 
 
 ## Ver também
 
-Decisões 021, 022, 026, 027, 030 e 043; `internal/db/CLAUDE.md`.
+Decisões 021, 022, 026, 027, 030 e 044; `internal/db/CLAUDE.md`.

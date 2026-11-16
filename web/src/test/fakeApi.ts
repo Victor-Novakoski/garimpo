@@ -35,6 +35,7 @@ export function job(number: number, over: Partial<JobDetail> = {}): JobDetail {
     reasons: ['+15 Go no título'],
     history: [],
     posting: null,
+    letter_off: '',
     ...over,
     status,
     status_label: LABEL[status],
@@ -44,6 +45,8 @@ export function job(number: number, over: Partial<JobDetail> = {}): JobDetail {
 export interface FakeApi {
   jobs: JobDetail[]
   collect: CollectState
+  /** What the letter route answers. */
+  letter: string
   /** Every request made, as "METHOD /path body". */
   calls: string[]
   /** When set, the next request fails with this. */
@@ -87,6 +90,7 @@ export function fakeApi(jobs: JobDetail[] = []): FakeApi {
   const api: FakeApi = {
     jobs,
     collect: { available: true, running: false, started_at: null, finished_at: null, log: '' },
+    letter: 'Olá, time da Acme,\n\nTrabalho com Go há três anos.',
     calls: [],
     failNext: null,
     onCollect: () => {},
@@ -112,6 +116,13 @@ export function fakeApi(jobs: JobDetail[] = []): FakeApi {
         api.collect = { ...api.collect, running: true, started_at: '2026-11-12T13:00:00Z', finished_at: null, log: '', error: undefined }
         api.onCollect(api)
         return answer(202, api.collect)
+      }
+      const letter = /^\/jobs\/(\d+)\/letter$/.exec(path)
+      if (letter && method === 'POST') {
+        const asked = api.jobs.find((j) => j.number === Number(letter[1]))
+        if (!asked) return answer(404, { error: `não existe vaga #${letter[1]}` })
+        if (asked.letter_off !== '') return answer(409, { error: asked.letter_off })
+        return answer(200, { letter: api.letter })
       }
       const match = /^\/jobs\/(\d+)$/.exec(path)
       const found = match ? api.jobs.find((j) => j.number === Number(match[1])) : undefined

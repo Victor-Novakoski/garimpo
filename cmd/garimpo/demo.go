@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/victor-novakoski/garimpo/internal/ai"
+	"github.com/victor-novakoski/garimpo/internal/api"
 	"github.com/victor-novakoski/garimpo/internal/collector"
 	"github.com/victor-novakoski/garimpo/internal/job"
 	"github.com/victor-novakoski/garimpo/internal/profile"
@@ -29,7 +30,12 @@ const (
 	demoSource  = "exemplo"
 )
 
-const demoCollectOff = "modo demo: as vagas são de exemplo e a coleta fica desligada"
+// demoOptions turn off what needs the network: the demo neither collects
+// nor asks a model for a letter.
+var demoOptions = api.Options{
+	CollectOff: "modo demo: as vagas são de exemplo e a coleta fica desligada",
+	LetterOff:  "modo demo: a carta é escrita pela IA, que fica desligada aqui. Use o garimpo serve -ai local com o seu perfil",
+}
 
 // demoPosting is one made-up posting of the demo file and what the
 // made-up person did with it.

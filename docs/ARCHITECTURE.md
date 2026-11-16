@@ -31,7 +31,7 @@ Os cortes são o ponto de partida e mudam depois de duas semanas de uso. Como ca
 | --- | --- |
 | Coleta, nota e API | Go, biblioteca padrão (o roteador é o `net/http`) |
 | Banco | Postgres no Supabase, SQL puro com migrações, pelo driver `pgx` |
-| IA | Interface `Scorer`: `claude -p` local ou API do Claude pelo SDK oficial |
+| IA | Interfaces `Scorer` (nota) e `Writer` (rascunho da carta): `claude -p` local ou API do Claude pelo SDK oficial |
 | Painel | React + Vite + TypeScript, embutido no binário e servido pelo `garimpo serve` em `127.0.0.1` |
 | Agendamento | Na mão, pelo botão do painel ou pelo `collect` |
 | Acesso | Só o dono, na própria máquina. A `garimpo-api` avulsa pede um token fixo (ver [SECURITY.md](SECURITY.md)) |
@@ -53,7 +53,7 @@ A API (`internal/api`) lê e escreve o mesmo registro e sobe de dois jeitos: den
 
 ## Modo demo
 
-O `garimpo serve -demo` sobe o painel com vagas inventadas (`demo/vagas.json`) e o perfil de exemplo, sem banco e sem rede. As vagas passam pelos passos 2 a 6 de verdade; só a leitura da IA vem pronta no arquivo. Nada é gravado (decisão 043).
+O `garimpo serve -demo` sobe o painel com vagas inventadas (`demo/vagas.json`) e o perfil de exemplo, sem banco e sem rede. As vagas passam pelos passos 2 a 6 de verdade; só a leitura da IA vem pronta no arquivo. Nada é gravado (decisão 044).
 
 ## Perfil
 

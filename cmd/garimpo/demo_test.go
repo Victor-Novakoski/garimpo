@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/victor-novakoski/garimpo/internal/api"
 	"github.com/victor-novakoski/garimpo/internal/tracker"
 )
 
@@ -84,7 +83,7 @@ func TestDemoShowsEveryStateWithMadeUpPostings(t *testing.T) {
 }
 
 func TestDemoServesThePanelWithoutCollecting(t *testing.T) {
-	srv := httptest.NewServer(serveHandler(openTestDemo(t), api.Options{CollectOff: demoCollectOff}))
+	srv := httptest.NewServer(serveHandler(openTestDemo(t), demoOptions))
 	defer srv.Close()
 
 	code, out := call(t, srv, "GET", "/api/jobs")
@@ -100,7 +99,7 @@ func TestDemoServesThePanelWithoutCollecting(t *testing.T) {
 		t.Errorf("posting = %v", out["posting"])
 	}
 	code, out = call(t, srv, "GET", "/api/collect")
-	if code != 200 || out["available"] != false || out["reason"] != demoCollectOff {
+	if code != 200 || out["available"] != false || out["reason"] != demoOptions.CollectOff {
 		t.Errorf("collect = %d %v", code, out)
 	}
 	if code, _ := call(t, srv, "POST", "/api/collect"); code < 400 {

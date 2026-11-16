@@ -27,6 +27,7 @@ const DefaultLocalModel = "haiku"
 // working directory. All a hostile posting can reach is its own class.
 type Local struct {
 	system  string
+	letter  string // the system prompt of the cover letter
 	model   string
 	command string
 	timeout time.Duration
@@ -41,6 +42,7 @@ func NewLocal(p profile.Profile, model string) *Local {
 	}
 	return &Local{
 		system:  System(p),
+		letter:  LetterSystem(p),
 		model:   model,
 		command: "claude",
 		timeout: 3 * time.Minute,
@@ -50,13 +52,13 @@ func NewLocal(p profile.Profile, model string) *Local {
 
 func (l *Local) Name() string { return "local:" + l.model }
 
-func (l *Local) args() []string {
-	schema, _ := json.Marshal(Schema())
+func (l *Local) args(system string, schema map[string]any) []string {
+	format, _ := json.Marshal(schema)
 	return []string{
 		"-p",
 		"--output-format", "json",
-		"--json-schema", string(schema),
-		"--system-prompt", l.system,
+		"--json-schema", string(format),
+		"--system-prompt", system,
 		"--model", l.model,
 		"--tools", "", // no tool at all: nothing to read, write or run
 		"--strict-mcp-config", // and no MCP server from the user's config
@@ -75,33 +77,52 @@ type envelope struct {
 }
 
 func (l *Local) Assess(ctx context.Context, j job.Job) (Assessment, error) {
+	out, err := l.ask(ctx, l.system, Schema(), User(j))
+	if err != nil {
+		return Assessment{}, err
+	}
+	return Parse(out)
+}
+
+// Letter drafts the cover letter with the same locked-down CLI.
+func (l *Local) Letter(ctx context.Context, j job.Job, n Notes) (string, error) {
+	out, err := l.ask(ctx, l.letter, LetterSchema(), LetterUser(j, n))
+	if err != nil {
+		return "", err
+	}
+	return ParseLetter(out)
+}
+
+// ask runs the CLI once and returns the JSON it answered, still to be
+// validated by the caller.
+func (l *Local) ask(ctx context.Context, system string, schema map[string]any, stdin string) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(ctx, l.timeout)
 	defer cancel()
-	out, err := l.run(ctx, l.command, l.args(), User(j))
+	out, err := l.run(ctx, l.command, l.args(system, schema), stdin)
 	if err != nil {
 		if errors.Is(err, exec.ErrNotFound) {
-			return Assessment{}, fmt.Errorf("%w: comando %q não encontrado (instale o Claude Code e faça login)", ErrUnavailable, l.command)
+			return nil, fmt.Errorf("%w: comando %q não encontrado (instale o Claude Code e faça login)", ErrUnavailable, l.command)
 		}
 		if strings.Contains(string(out), "unknown option") {
-			return Assessment{}, fmt.Errorf("%w: este Claude Code não conhece uma das opções usadas; atualize com \"claude update\": %s", ErrUnavailable, firstLine(out))
+			return nil, fmt.Errorf("%w: este Claude Code não conhece uma das opções usadas; atualize com \"claude update\": %s", ErrUnavailable, firstLine(out))
 		}
-		return Assessment{}, fmt.Errorf("claude -p: %w: %s", err, firstLine(out))
+		return nil, fmt.Errorf("claude -p: %w: %s", err, firstLine(out))
 	}
 	var env envelope
 	if err := json.Unmarshal(out, &env); err != nil {
-		return Assessment{}, fmt.Errorf("claude -p: saída inesperada: %s", firstLine(out))
+		return nil, fmt.Errorf("claude -p: saída inesperada: %s", firstLine(out))
 	}
 	if env.IsError {
 		msg := cut(clean(env.Result), 200)
 		if strings.Contains(strings.ToLower(msg), "login") || strings.Contains(strings.ToLower(msg), "api key") {
-			return Assessment{}, fmt.Errorf("%w: %s", ErrUnavailable, msg)
+			return nil, fmt.Errorf("%w: %s", ErrUnavailable, msg)
 		}
-		return Assessment{}, fmt.Errorf("claude -p: %s: %s", env.Subtype, msg)
+		return nil, fmt.Errorf("claude -p: %s: %s", env.Subtype, msg)
 	}
 	if len(env.StructuredOutput) > 0 && string(env.StructuredOutput) != "null" {
-		return Parse(env.StructuredOutput)
+		return env.StructuredOutput, nil
 	}
-	return Parse([]byte(env.Result))
+	return []byte(env.Result), nil
 }
 
 // runCommand runs the CLI in an empty directory with the prompt on stdin.

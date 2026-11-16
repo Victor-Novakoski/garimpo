@@ -13,10 +13,12 @@ A interface dos coletores e um pacote por fonte (`githubissues`, `greenhouse`, `
 ## Armadilhas conhecidas
 
 - No Lever, o campo `country` é confiável: vaga de outro país sai já na coleta, e o modelo de trabalho vem do campo da API. No Greenhouse não existe esse campo, então o país é filtrado pelo local, no `score`.
+- No Greenhouse o modelo de trabalho não tem campo padrão. Cada empresa diz num lugar (conferido em 16/11/2026): a Wildlife num campo próprio em `metadata` ("Work Model"), que o coletor lê; o QuintoAndar e a XP num parágrafo igual em toda vaga; o Inter e o C6 numa linha dos requisitos, só em parte das vagas; o BTG em lugar nenhum, fora um "Teletrabalho" no local. O que está no texto é lido pelo `normalize`.
+- O `metadata` do Greenhouse muda de empresa para empresa e o valor pode ser texto, lista, número, booleano ou `null` (o C6 manda `metadata: null`).
 - Nome de board igual não é a mesma empresa: `flash`, `juno`, `cortex`, `blip` e `remote` existem no Greenhouse e não são as brasileiras.
 - A Gupy mudou de formato antes (a API antiga dá 404); os dados vêm do `__NEXT_DATA__` da página de busca.
 - Sem `GITHUB_TOKEN` a API do GitHub limita a 60 pedidos por hora.
 
 ## Ver também
 
-Decisões 005, 008, 010, 023 e 024.
+Decisões 005, 008, 010, 023, 024 e 043.

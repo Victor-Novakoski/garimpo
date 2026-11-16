@@ -1,0 +1,350 @@
+{
+  "jobs": [
+    {
+      "id": 8912839002,
+      "title": "Associate Data Engineer",
+      "absolute_url": "https://job-boards.greenhouse.io/wildlifestudios/jobs/8912839002",
+      "updated_at": "2026-11-10T10:00:00-05:00",
+      "location": {
+        "name": "São Paulo, Brazil"
+      },
+      "departments": [
+        {
+          "name": "Data"
+        }
+      ],
+      "metadata": [
+        {
+          "id": 18188364002,
+          "name": "Work Model",
+          "value": "Hybrid",
+          "value_type": "single_select"
+        }
+      ],
+      "content": "&lt;p&gt;Today, we have offices in Brazil, Argentina, Ireland, and the United States.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Advanced/Fluent English and ability to work hybrid from our São Paulo office (Itaim Bibi) 3 days/week.&lt;/li&gt;&lt;/ul&gt;"
+    },
+    {
+      "id": 8635029002,
+      "title": "UI Designer",
+      "absolute_url": "https://job-boards.greenhouse.io/wildlifestudios/jobs/8635029002",
+      "updated_at": "2026-11-10T10:00:00-05:00",
+      "location": {
+        "name": "São Paulo"
+      },
+      "departments": [
+        {
+          "name": "Art"
+        }
+      ],
+      "metadata": [
+        {
+          "id": 18188364002,
+          "name": "Work Model",
+          "value": "Híbrido/Hybrid",
+          "value_type": "single_select"
+        }
+      ],
+      "content": "&lt;p&gt;Today, we have offices in Brazil, Finland, and the United States.&lt;/p&gt;"
+    },
+    {
+      "id": 8375546002,
+      "title": "Game Designer & Game Lead",
+      "absolute_url": "https://job-boards.greenhouse.io/wildlifestudios/jobs/8375546002",
+      "updated_at": "2026-11-10T10:00:00-05:00",
+      "location": {
+        "name": "São Paulo, SP"
+      },
+      "departments": [
+        {
+          "name": "Game Design"
+        }
+      ],
+      "metadata": [
+        {
+          "id": 18188364002,
+          "name": "Work Model",
+          "value": "In-Office",
+          "value_type": "single_select"
+        }
+      ],
+      "content": "&lt;p&gt;Today, we have offices in Brazil, Finland, and the United States.&lt;/p&gt;"
+    },
+    {
+      "id": 8797800002,
+      "title": "Product Manager",
+      "absolute_url": "https://job-boards.greenhouse.io/wildlifestudios/jobs/8797800002",
+      "updated_at": "2026-11-10T10:00:00-05:00",
+      "location": {
+        "name": "São Paulo"
+      },
+      "departments": [
+        {
+          "name": "Product"
+        }
+      ],
+      "metadata": [
+        {
+          "id": 18188364002,
+          "name": "Work Model",
+          "value": "Presencial/In-Office",
+          "value_type": "single_select"
+        }
+      ],
+      "content": "&lt;p&gt;Today, we have offices in Brazil, Finland, and the United States.&lt;/p&gt;"
+    },
+    {
+      "id": 8656067002,
+      "title": "Procurement Manager",
+      "absolute_url": "https://job-boards.greenhouse.io/wildlifestudios/jobs/8656067002",
+      "updated_at": "2026-11-10T10:00:00-05:00",
+      "location": {
+        "name": "São Paulo, Brazil"
+      },
+      "departments": [
+        {
+          "name": "Finance"
+        }
+      ],
+      "metadata": [
+        {
+          "id": 18188364002,
+          "name": "Work Model",
+          "value": null,
+          "value_type": "single_select"
+        }
+      ],
+      "content": "&lt;ul&gt;&lt;li&gt;Fluent English and Portuguese; based in or able to work from São Paulo (hybrid).&lt;/li&gt;&lt;/ul&gt;"
+    },
+    {
+      "id": 4023099009,
+      "title": "Grupo QuintoAndar | Senior Software Engineer",
+      "absolute_url": "https://job-boards.greenhouse.io/quintoandar/jobs/4023099009",
+      "updated_at": "2026-08-28T15:17:52-04:00",
+      "location": {
+        "name": "Brasil"
+      },
+      "departments": [
+        {
+          "name": "Engineering"
+        }
+      ],
+      "metadata": [
+        {
+          "id": 1,
+          "name": "Area",
+          "value": "Engineering",
+          "value_type": "single_select"
+        }
+      ],
+      "content": "&lt;h3&gt;Location &amp;amp; Remote Work&lt;/h3&gt;&lt;p&gt;Our technology team operates under a &quot;remote-first&quot; model, which means we work from home and can live anywhere in Brazil. We also offer the option of working from our São Paulo offices or partner coworking spaces, up to twice a week.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Home office allowance&lt;/li&gt;&lt;/ul&gt;"
+    },
+    {
+      "id": 4362525009,
+      "title": "Grupo QuintoAndar | Especialista em Dados e Estratégia",
+      "absolute_url": "https://job-boards.greenhouse.io/quintoandar/jobs/4362525009",
+      "updated_at": "2026-11-05T09:00:00-05:00",
+      "location": {
+        "name": "São Paulo, São Paulo, Brazil"
+      },
+      "departments": [
+        {
+          "name": "Operations"
+        }
+      ],
+      "metadata": [
+        {
+          "id": 1,
+          "name": "Area",
+          "value": "Operations",
+          "value_type": "single_select"
+        }
+      ],
+      "content": "&lt;h3&gt;Localização e Modelo de Trabalho&lt;/h3&gt;&lt;p&gt;Atuamos no modelo remote-first, oferecendo total flexibilidade para você trabalhar de qualquer lugar do Brasil. Para quem gosta de encontros presenciais, disponibilizamos nosso escritório em São Paulo e coworkings parceiros.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Flexibilidade: Auxílio Home Office e programa Work From Anywhere (WFA).&lt;/li&gt;&lt;/ul&gt;"
+    },
+    {
+      "id": 8696050002,
+      "title": "Analista Sênior de AppSec",
+      "absolute_url": "https://job-boards.greenhouse.io/xpinc/jobs/8696050002",
+      "updated_at": "2026-11-11T12:00:00-05:00",
+      "location": {
+        "name": "São Paulo, SP"
+      },
+      "departments": [
+        {
+          "name": "Tecnologia"
+        }
+      ],
+      "metadata": [
+        {
+          "id": 2,
+          "name": "[BGC] Job level",
+          "value": "06 - Senior Analyst /Analyst 3",
+          "value_type": "single_select"
+        },
+        {
+          "id": 3,
+          "name": "Budget key",
+          "value": 50030116.0,
+          "value_type": "number"
+        },
+        {
+          "id": 4,
+          "name": "[2025] Link do Alinhamento",
+          "value": null,
+          "value_type": "long_text"
+        }
+      ],
+      "content": "&lt;p&gt;&lt;strong&gt;Modelo de Trabalho Presencial Flexível&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;O nosso modelo de trabalho varia de acordo com a função, podendo ser totalmente presencial para frentes de negócio e mais flexível para outras equipes. Seguimos um modelo com mais frequência presencial, mas sempre guiado por flexibilidade e autonomia com a responsabilidade da nossa cultura empreendedora.&lt;/p&gt;"
+    },
+    {
+      "id": 8198058002,
+      "title": "Alta Renda | Pool Expansão",
+      "absolute_url": "https://job-boards.greenhouse.io/xpinc/jobs/8198058002",
+      "updated_at": "2026-11-11T12:00:00-05:00",
+      "location": {
+        "name": "São Paulo, SP"
+      },
+      "departments": [
+        {
+          "name": "Comercial"
+        }
+      ],
+      "metadata": [
+        {
+          "id": 3,
+          "name": "Budget key",
+          "value": 0.0,
+          "value_type": "number"
+        }
+      ],
+      "content": "&lt;ul&gt;&lt;li&gt;Morar na cidade de São Paulo, pois se trata de uma posição no modelo 100% presencial&lt;/li&gt;&lt;li&gt;Disciplina para manter um alta frequência de contato com clientes de forma online e presencial.&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;strong&gt;Modelo de Trabalho Presencial Flexível&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;O nosso modelo de trabalho varia de acordo com a função, podendo ser totalmente presencial para frentes de negócio e mais flexível para outras equipes.&lt;/p&gt;"
+    },
+    {
+      "id": 4664774005,
+      "title": "DEVELOPER JAVA (Pl, Sr & Spec) | São Paulo",
+      "absolute_url": "https://job-boards.greenhouse.io/inter/jobs/4664774005",
+      "updated_at": "2026-11-09T08:00:00-05:00",
+      "location": {
+        "name": "São Paulo, SP"
+      },
+      "departments": [
+        {
+          "name": "Technology"
+        }
+      ],
+      "metadata": [
+        {
+          "id": 4688020005,
+          "name": "Palavras chave",
+          "value": null,
+          "value_type": "long_text"
+        },
+        {
+          "id": 4760810005,
+          "name": "Área",
+          "value": [
+            "TECHNOLOGY"
+          ],
+          "value_type": "multi_select"
+        }
+      ],
+      "content": "&lt;ul&gt;&lt;li&gt;Disponibilidade para trabalho presencial&lt;/li&gt;&lt;/ul&gt;"
+    },
+    {
+      "id": 4724343005,
+      "title": "Analista de Business Intelligence Sênior | Jornada do Cliente",
+      "absolute_url": "https://job-boards.greenhouse.io/c6bank/jobs/4724343005",
+      "updated_at": "2026-11-12T08:00:00-05:00",
+      "location": {
+        "name": "São Paulo, Brazil"
+      },
+      "departments": [
+        {
+          "name": "Dados"
+        }
+      ],
+      "metadata": null,
+      "content": "&lt;ul&gt;&lt;li&gt;Disponibilidade para atuar no modelo 100% presencial na Av. Nove de Julho.&lt;/li&gt;&lt;li&gt;Carbon Spa - Salão de beleza localizado em nosso escritório;&lt;/li&gt;&lt;/ul&gt;"
+    },
+    {
+      "id": 4725043005,
+      "title": "Pessoa Desenvolvedora Back-end Sênior Java/Kotlin | Conta Global",
+      "absolute_url": "https://job-boards.greenhouse.io/c6bank/jobs/4725043005",
+      "updated_at": "2026-11-12T08:00:00-05:00",
+      "location": {
+        "name": "São Paulo, Brazil"
+      },
+      "departments": [
+        {
+          "name": "Tecnologia"
+        }
+      ],
+      "metadata": null,
+      "content": "&lt;p&gt;Estamos localizados em São Paulo/SP e contamos com mais de 3.000 CSixers que estão sempre a mil por hora.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Carbon Care - Ambulatório localizado em nosso escritório;&lt;/li&gt;&lt;/ul&gt;"
+    },
+    {
+      "id": 6177447004,
+      "title": "Analista de Projetos — Product Owner - IT Onboarding Offshore",
+      "absolute_url": "https://job-boards.greenhouse.io/btgpactual/jobs/6177447004",
+      "updated_at": "2026-11-13T08:00:00-05:00",
+      "location": {
+        "name": "São Paulo, Rio de Janeiro ou Teletrabalho"
+      },
+      "departments": [
+        {
+          "name": "TECH - DEVELOPMENT"
+        }
+      ],
+      "metadata": [
+        {
+          "id": 5,
+          "name": "Empresa",
+          "value": "BTG Pactual",
+          "value_type": "single_select"
+        },
+        {
+          "id": 6,
+          "name": "Destaque",
+          "value": null,
+          "value_type": "yes_no"
+        },
+        {
+          "id": 7,
+          "name": "Vaga Oculta",
+          "value": false,
+          "value_type": "yes_no"
+        }
+      ],
+      "content": "&lt;p&gt;O BTG Pactual é o maior banco de investimentos da América Latina.&lt;/p&gt;"
+    },
+    {
+      "id": 6026814004,
+      "title": "Analista de Desenvolvimento em Angular",
+      "absolute_url": "https://job-boards.greenhouse.io/btgpactual/jobs/6026814004",
+      "updated_at": "2026-11-13T08:00:00-05:00",
+      "location": {
+        "name": "São Paulo "
+      },
+      "departments": [
+        {
+          "name": "PRODUCTS"
+        }
+      ],
+      "metadata": [
+        {
+          "id": 5,
+          "name": "Empresa",
+          "value": "BTG Pactual",
+          "value_type": "single_select"
+        },
+        {
+          "id": 6,
+          "name": "Destaque",
+          "value": null,
+          "value_type": "yes_no"
+        }
+      ],
+      "content": "&lt;p&gt;O BTG Pactual é o maior banco de investimentos da América Latina.&lt;/p&gt;"
+    }
+  ]
+}

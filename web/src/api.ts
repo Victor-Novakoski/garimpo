@@ -55,6 +55,11 @@ export function updateJob(number: number, change: { status?: Status; note?: stri
   })
 }
 
+/** Asks for a draft of the cover letter. It can take a minute: a model writes it. */
+export async function draftLetter(number: number): Promise<string> {
+  return (await call<{ letter: string }>(`/jobs/${number}/letter`, { method: 'POST' })).letter
+}
+
 export function getFunnel(): Promise<Funnel> {
   return call<Funnel>('/funnel')
 }

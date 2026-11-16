@@ -216,6 +216,55 @@ describe('the posting', () => {
     expect(note).toHaveValue('falei com a Ana e mais')
   })
 
+  it('drafts the cover letter as text, lets the person edit it and copies it', async () => {
+    const api = fakeApi([full()])
+    api.letter = 'Olá, time da Acme,\n\n<img src=x onerror="alert(1)"> Trabalho com Go.'
+    const user = userEvent.setup()
+    open('#/vaga/12')
+    const card = (await screen.findByRole('heading', { name: 'Carta de apresentação' })).closest('section') as HTMLElement
+    expect(within(card).queryByRole('textbox')).not.toBeInTheDocument()
+
+    await user.click(within(card).getByRole('button', { name: 'Gerar carta' }))
+    const draft = await within(card).findByRole('textbox', { name: 'Rascunho da carta' })
+    // The letter is text: what looks like markup is shown, never run.
+    expect(draft).toHaveValue(api.letter)
+    expect(card.querySelector('img')).toBeNull()
+    expect(api.calls).toContain('POST /api/jobs/12/letter')
+    expect(within(card).getByText(/O Garimpo não envia nem guarda a carta/)).toBeInTheDocument()
+
+    await user.type(draft, ' Abraço.')
+    await user.click(within(card).getByRole('button', { name: 'Copiar carta' }))
+    expect(await screen.findByText('Carta copiada.')).toBeInTheDocument()
+    expect(await navigator.clipboard.readText()).toBe(`${api.letter} Abraço.`)
+
+    // Asking for a letter marks nothing: applying is still up to the person.
+    expect(api.jobs[0]?.status).toBe('saved')
+    expect(api.calls.filter((c) => c.startsWith('PATCH'))).toEqual([])
+  })
+
+  it('keeps the draft when writing another one fails', async () => {
+    const api = fakeApi([full()])
+    const user = userEvent.setup()
+    open('#/vaga/12')
+    const card = (await screen.findByRole('heading', { name: 'Carta de apresentação' })).closest('section') as HTMLElement
+    await user.click(within(card).getByRole('button', { name: 'Gerar carta' }))
+    const draft = await within(card).findByRole('textbox', { name: 'Rascunho da carta' })
+
+    api.failNext = { status: 503, error: 'IA indisponível: faça login no Claude Code' }
+    await user.click(within(card).getByRole('button', { name: 'Gerar outra' }))
+    expect(await within(card).findByRole('alert')).toHaveTextContent('faça login no Claude Code')
+    expect(draft).toHaveValue(api.letter)
+  })
+
+  it('turns the letter off, saying why, when this server has no AI', async () => {
+    const api = fakeApi([{ ...full(), letter_off: 'a carta usa a IA: inicie o painel com "garimpo serve -ai local"' }])
+    open('#/vaga/12')
+    const card = (await screen.findByRole('heading', { name: 'Carta de apresentação' })).closest('section') as HTMLElement
+    expect(within(card).getByRole('button', { name: 'Gerar carta' })).toBeDisabled()
+    expect(within(card).getByText(/garimpo serve -ai local/)).toBeInTheDocument()
+    expect(api.calls.filter((c) => c.includes('/letter'))).toEqual([])
+  })
+
   it('says when the posting does not exist', async () => {
     fakeApi([])
     open('#/vaga/99')
