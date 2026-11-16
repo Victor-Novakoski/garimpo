@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { getJob, updateJob } from '../api'
 import { Facts, State } from '../components/Chips'
+import { Letter } from '../components/Letter'
 import { ScoreBadge } from '../components/ScoreBadge'
 import { StatusPicker } from '../components/StatusActions'
 import { STATUS_LABEL, formatDay, formatMoment, safeUrl, splitReasons } from '../format'
@@ -171,6 +172,8 @@ export function JobDetail({ number, backHref, version, busy, onMark, onSaved, on
           )}
         </section>
       )}
+
+      <Letter key={job.number} number={job.number} off={job.letter_off} onCopied={onSaved} onError={onError} />
 
       <section className="card" aria-labelledby="history-title">
         <h2 id="history-title">Histórico</h2>

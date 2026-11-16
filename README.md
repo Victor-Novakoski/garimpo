@@ -54,7 +54,7 @@ Por padrão a IA avalia as 20 melhores vagas pela nota das regras (`-ai-top`), c
 
 ### Painel
 
-O painel mostra a lista do dia, a tela de cada vaga (motivos da nota, leitura da IA, anotação e histórico) e o funil. Ele roda só na sua máquina: um comando sobe a API e as telas em `127.0.0.1`, sem login e sem nada hospedado.
+O painel mostra a lista do dia, a tela de cada vaga (motivos da nota, leitura da IA, rascunho da carta de apresentação, anotação e histórico) e o funil. Ele roda só na sua máquina: um comando sobe a API e as telas em `127.0.0.1`, sem login e sem nada hospedado.
 
 Precisa de um Node recente, só para montar as telas: o 22 mais novo (22.22 em diante) ou o 24 (24.15 em diante). Com `nvm`, é `nvm install 22`. Com um Node mais antigo o `npm ci` para e avisa, em vez de instalar pela metade. Faça isso na primeira vez e sempre que atualizar o projeto:
 
@@ -67,13 +67,14 @@ Depois, no dia a dia, é um comando só:
 
 ```bash
 go run ./cmd/garimpo serve              # abre em http://127.0.0.1:8080
-go run ./cmd/garimpo serve -ai local    # o botão "Buscar vagas" também pede a nota da IA
+go run ./cmd/garimpo serve -ai local    # liga a IA: nota no "Buscar vagas" e o botão "Gerar carta"
 go run ./cmd/garimpo serve -port 9000   # outra porta
 ```
 
 - **Lista do dia**: nota, estado, empresa, modelo e link, com "vou aplicar" no topo. Um clique marca (vou aplicar, apliquei, descartar) e o aviso que aparece deixa desfazer.
 - **Filtros**: por estado (vou aplicar, apliquei, entrevista, em andamento, descartadas, todas) e busca por vaga ou empresa.
 - **Vaga**: por que a nota é aquela, o que a IA disse (encaixe, a favor, o que falta, o que destacar), anotação e histórico com datas.
+- **Carta de apresentação**: na tela da vaga, "Gerar carta" pede à IA um rascunho a partir do seu perfil e do que ela apontou na vaga. Você ajusta ali mesmo e copia. É só um rascunho: o Garimpo não envia nem guarda a carta, e quem se candidata é você. Precisa do `serve` com `-ai` e do `about` do perfil preenchido, senão a carta sai genérica.
 - **Funil**: quantas vagas em cada estado e as últimas mudanças.
 - **Buscar vagas**: roda a coleta dali mesmo, com as opções que você passou ao `serve` (as mesmas do `collect`: `-ai`, `-gupy`, `-days`...), e mostra o andamento. Precisa do `profile.yaml`.
 

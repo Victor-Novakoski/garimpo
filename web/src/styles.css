@@ -700,6 +700,15 @@ textarea {
   margin-top: 10px;
 }
 
+.letter-text {
+  min-height: 16rem;
+  line-height: 1.55;
+}
+
+.letter-text + .notice {
+  margin-top: 10px;
+}
+
 .reasons {
   display: grid;
   gap: 6px;
