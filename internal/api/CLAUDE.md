@@ -14,4 +14,4 @@ As rotas HTTP (listar, ver, marcar, anotar, funil, coletar, carta), o token do d
 
 ## Ver também
 
-Decisões 032, 033, 037, 039 e 043; [`docs/SECURITY.md`](../../docs/SECURITY.md#painel-local).
+Decisões 032, 033, 037, 039 e 044; [`docs/SECURITY.md`](../../docs/SECURITY.md#painel-local).
