@@ -1,0 +1,1 @@
+{"type":"result","subtype":"success","is_error":false,"num_turns":2,"stop_reason":"tool_use","result":"","structured_output":{"letter":"Olá, time da Acme,\n\nTrabalho com Go e PostgreSQL em produção há três anos, que é o centro do que a vaga pede.\n\n\n\nFico à disposição para conversar."},"total_cost_usd":0.0009,"terminal_reason":"completed"}

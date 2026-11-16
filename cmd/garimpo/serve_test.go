@@ -13,9 +13,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/victor-novakoski/garimpo/internal/ai"
 	"github.com/victor-novakoski/garimpo/internal/api"
 	"github.com/victor-novakoski/garimpo/internal/collector"
 	"github.com/victor-novakoski/garimpo/internal/job"
+	"github.com/victor-novakoski/garimpo/internal/profile"
 	"github.com/victor-novakoski/garimpo/internal/tracker"
 )
 
@@ -148,5 +150,55 @@ func TestServeCollectFailuresAreReadable(t *testing.T) {
 	err = collectRun(collectOptions{profile: "../../profile.example.yaml"}, tracker.OpenFile(path), &terminal)(context.Background(), &log)
 	if err == nil || strings.Contains(err.Error(), path) || !strings.Contains(terminal.String(), "corrompido") {
 		t.Errorf("broken store: err = %v, terminal = %q", err, terminal.String())
+	}
+}
+
+// fixedWriter answers a fixed letter and keeps what it was asked.
+type fixedWriter struct {
+	job   job.Job
+	notes ai.Notes
+}
+
+func (w *fixedWriter) Letter(_ context.Context, j job.Job, n ai.Notes) (string, error) {
+	w.job, w.notes = j, n
+	return "Olá,", nil
+}
+
+func TestPanelLetter(t *testing.T) {
+	// Without -ai the panel writes no letter and says how to turn it on.
+	if opts := panelOptions(collectOptions{}, nil); opts.Letter != nil || !strings.Contains(opts.LetterOff, "-ai local") {
+		t.Errorf("without -ai: letter on = %v, reason = %q", opts.Letter != nil, opts.LetterOff)
+	}
+
+	writer := &fixedWriter{}
+	var gotMode, gotProfile string
+	old := newWriter
+	newWriter = func(o collectOptions, p profile.Profile) ai.Writer {
+		gotMode, gotProfile = o.ai, p.Name
+		return writer
+	}
+	t.Cleanup(func() { newWriter = old })
+
+	opts := panelOptions(collectOptions{ai: "local", profile: "../../profile.example.yaml"}, nil)
+	if opts.Letter == nil || opts.LetterOff != "" {
+		t.Fatalf("with -ai: letter on = %v, reason = %q", opts.Letter != nil, opts.LetterOff)
+	}
+	text, err := opts.Letter(context.Background(), job.Job{Title: "Dev Go"},
+		[]string{"+15 Go no título", "+22 IA, encaixe bom: Bate com o perfil.", "    destaque: APIs em Go"})
+	if err != nil || text != "Olá," {
+		t.Fatalf("text = %q, err = %v", text, err)
+	}
+	if gotMode != "local" || gotProfile == "" || writer.job.Title != "Dev Go" {
+		t.Errorf("mode %q, profile %q, job %+v", gotMode, gotProfile, writer.job)
+	}
+	// What the AI already said about the posting goes to the letter.
+	if writer.notes.Summary != "Bate com o perfil." || len(writer.notes.Highlights) != 1 {
+		t.Errorf("notes = %+v", writer.notes)
+	}
+
+	// The profile is read on every letter: without one there is no letter.
+	missing := panelOptions(collectOptions{ai: "local", profile: filepath.Join(t.TempDir(), "nao-existe.yaml")}, nil)
+	if _, err := missing.Letter(context.Background(), job.Job{}, nil); err == nil {
+		t.Error("letter without a profile")
 	}
 }

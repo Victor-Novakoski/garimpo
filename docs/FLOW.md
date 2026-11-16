@@ -83,9 +83,10 @@ A lista do dia mostra, nesta ordem:
 | Ver uma vaga | `garimpo show 12` | `GET /jobs/12` | tela da vaga, com os motivos da nota e a leitura da IA |
 | Marcar | `garimpo mark 12 apliquei` | `PATCH /jobs/12` | botões na lista (com desfazer) e na vaga |
 | Anotar | `garimpo note 12 "falei com a Ana"` | `PATCH /jobs/12` | campo na vaga |
+| Rascunhar a carta de apresentação | não tem | `POST /jobs/12/letter` (só no painel local, com `-ai`) | botão "Gerar carta" na vaga: mostra o texto e copia |
 | Ver o funil | `garimpo list tudo` | `GET /funnel` | tela "Funil": contagem por estado e últimas mudanças |
 | Onde fica guardado | arquivo na pasta de configuração do usuário (`garimpo/vagas.json`), fora do git, ou o Postgres | o mesmo registro da CLI | o mesmo registro, pela API |
 
-No código, quem guarda e lê os estados fica atrás de uma interface (`tracker.Store`), do mesmo jeito que a IA fica atrás de `ai.Scorer`. Há duas implementações, o arquivo e o Postgres, com as mesmas regras e os mesmos testes; a CLI e a API usam o banco quando `GARIMPO_DATABASE_URL` está definida e o arquivo quando não está. O `garimpo import` copia o arquivo local para o banco, para você não perder o que já marcou.
+No código, quem guarda e lê os estados fica atrás de uma interface (`tracker.Store`), do mesmo jeito que a IA fica atrás de `ai.Scorer` e `ai.Writer`. Há duas implementações, o arquivo e o Postgres, com as mesmas regras e os mesmos testes; a CLI e a API usam o banco quando `GARIMPO_DATABASE_URL` está definida e o arquivo quando não está. O `garimpo import` copia o arquivo local para o banco, para você não perder o que já marcou.
 
 Na API, `GET /jobs` sem parâmetro é a lista do dia (sem o que saiu da fonte); com `?status=` vêm todas as vagas daqueles estados, e as que saíram da fonte trazem `"gone": true`. "Nova hoje" (`new_today`) é a vaga vista pela primeira vez na última rodada. O `PATCH` aceita `status`, `note` ou os dois, e uma anotação vazia apaga a anterior.

@@ -26,6 +26,7 @@ const apiHost = "api.anthropic.com"
 type API struct {
 	client anthropic.Client
 	system string
+	letter string // the system prompt of the cover letter
 	model  string
 }
 
@@ -44,6 +45,7 @@ func NewAPI(p profile.Profile, model string, opts ...option.RequestOption) *API 
 	return &API{
 		client: anthropic.NewClient(append(base, opts...)...),
 		system: System(p),
+		letter: LetterSystem(p),
 		model:  model,
 	}
 }
@@ -51,20 +53,39 @@ func NewAPI(p profile.Profile, model string, opts ...option.RequestOption) *API 
 func (a *API) Name() string { return "api:" + a.model }
 
 func (a *API) Assess(ctx context.Context, j job.Job) (Assessment, error) {
+	out, err := a.ask(ctx, a.system, Schema(), User(j))
+	if err != nil {
+		return Assessment{}, err
+	}
+	return Parse(out)
+}
+
+// Letter drafts the cover letter with the same model and limits.
+func (a *API) Letter(ctx context.Context, j job.Job, n Notes) (string, error) {
+	out, err := a.ask(ctx, a.letter, LetterSchema(), LetterUser(j, n))
+	if err != nil {
+		return "", err
+	}
+	return ParseLetter(out)
+}
+
+// ask sends one message and returns the JSON the model answered, still to
+// be validated by the caller.
+func (a *API) ask(ctx context.Context, system string, schema map[string]any, user string) ([]byte, error) {
 	resp, err := a.client.Messages.New(ctx, anthropic.MessageNewParams{
 		Model:     anthropic.Model(a.model),
 		MaxTokens: 8000,
 		// The system prompt is the same for every job of a run.
 		System: []anthropic.TextBlockParam{{
-			Text:         a.system,
+			Text:         system,
 			CacheControl: anthropic.NewCacheControlEphemeralParam(),
 		}},
 		OutputConfig: anthropic.OutputConfigParam{
 			Effort: anthropic.OutputConfigEffortMedium,
-			Format: anthropic.JSONOutputFormatParam{Schema: Schema()},
+			Format: anthropic.JSONOutputFormatParam{Schema: schema},
 		},
 		Messages: []anthropic.MessageParam{
-			anthropic.NewUserMessage(anthropic.NewTextBlock(User(j))),
+			anthropic.NewUserMessage(anthropic.NewTextBlock(user)),
 		},
 	})
 	if err != nil {
@@ -72,26 +93,26 @@ func (a *API) Assess(ctx context.Context, j job.Job) (Assessment, error) {
 		if errors.As(err, &apiErr) {
 			switch apiErr.StatusCode {
 			case http.StatusUnauthorized, http.StatusForbidden:
-				return Assessment{}, fmt.Errorf("%w: a API recusou a credencial (confira ANTHROPIC_API_KEY)", ErrUnavailable)
+				return nil, fmt.Errorf("%w: a API recusou a credencial (confira ANTHROPIC_API_KEY)", ErrUnavailable)
 			case http.StatusNotFound:
-				return Assessment{}, fmt.Errorf("%w: modelo %q não encontrado", ErrUnavailable, a.model)
+				return nil, fmt.Errorf("%w: modelo %q não encontrado", ErrUnavailable, a.model)
 			}
-			return Assessment{}, fmt.Errorf("API do Claude: status %d", apiErr.StatusCode)
+			return nil, fmt.Errorf("API do Claude: status %d", apiErr.StatusCode)
 		}
-		return Assessment{}, fmt.Errorf("API do Claude: %w", err)
+		return nil, fmt.Errorf("API do Claude: %w", err)
 	}
 	switch resp.StopReason {
 	case anthropic.StopReasonRefusal:
-		return Assessment{}, errors.New("a IA se recusou a avaliar esta vaga")
+		return nil, errors.New("a IA se recusou a responder sobre esta vaga")
 	case anthropic.StopReasonMaxTokens:
-		return Assessment{}, errors.New("resposta da IA cortada por tamanho")
+		return nil, errors.New("resposta da IA cortada por tamanho")
 	}
 	for _, block := range resp.Content {
 		if text, ok := block.AsAny().(anthropic.TextBlock); ok {
-			return Parse([]byte(text.Text))
+			return []byte(text.Text), nil
 		}
 	}
-	return Assessment{}, errors.New("resposta da IA sem texto")
+	return nil, errors.New("resposta da IA sem texto")
 }
 
 // hostOnly refuses any request that is not HTTPS to the one allowed host,

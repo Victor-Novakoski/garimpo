@@ -11,8 +11,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/victor-novakoski/garimpo/internal/ai"
 	"github.com/victor-novakoski/garimpo/internal/api"
+	"github.com/victor-novakoski/garimpo/internal/job"
 	"github.com/victor-novakoski/garimpo/internal/panel"
+	"github.com/victor-novakoski/garimpo/internal/profile"
 	"github.com/victor-novakoski/garimpo/internal/tracker"
 )
 
@@ -80,6 +83,42 @@ func collectRun(o collectOptions, store tracker.Store, terminal io.Writer) api.R
 	}
 }
 
+// newWriter picks the AI implementation that drafts letters; tests replace
+// it.
+var newWriter = func(o collectOptions, p profile.Profile) ai.Writer {
+	if o.ai == "api" {
+		return ai.NewAPI(p, o.aiModel)
+	}
+	return ai.NewLocal(p, o.aiModel)
+}
+
+const noLetter = "a carta usa a IA: inicie o painel com \"garimpo serve -ai local\" (ou -ai api)"
+
+// letterRun is the cover letter the panel's button asks for: the same AI
+// mode and model of the collection, the profile read again each time, and
+// what the assessment already said about the posting.
+func letterRun(o collectOptions) api.LetterFunc {
+	return func(ctx context.Context, j job.Job, reasons []string) (string, error) {
+		p, hasProfile, err := loadProfile(o.profile)
+		if err != nil {
+			return "", fmt.Errorf("perfil inválido: %w", err)
+		}
+		if !hasProfile {
+			return "", fmt.Errorf("%w: a carta parte do seu perfil (copie profile.example.yaml para %s)", ai.ErrUnavailable, defaultProfile)
+		}
+		return newWriter(o, p).Letter(ctx, j, ai.NotesFromReasons(reasons))
+	}
+}
+
+// panelOptions is what the panel can ask this server to do.
+func panelOptions(o collectOptions, runner *api.Runner) api.Options {
+	opts := api.Options{Collect: runner, LetterOff: noLetter}
+	if o.ai != "" {
+		opts.Letter, opts.LetterOff = letterRun(o), ""
+	}
+	return opts
+}
+
 const noProfile = "sem perfil não há nota nem lista: copie profile.example.yaml para " + defaultProfile + ", ajuste e clique de novo"
 
 // serveHandler is everything serve answers: the API under /api/ and the
@@ -125,10 +164,10 @@ func runServe(ctx context.Context, args []string, stderr io.Writer) int {
 	// Collections stop with the server: their context ends on Ctrl+C.
 	runner := api.NewRunner(ctx, collectRun(o.collectOptions, store, stderr))
 	srv := &http.Server{
-		Handler:           serveHandler(store, api.Options{Collect: runner}),
+		Handler:           serveHandler(store, panelOptions(o.collectOptions, runner)),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       15 * time.Second,
-		WriteTimeout:      60 * time.Second,
+		WriteTimeout:      60 * time.Second, // the letter route extends its own
 		IdleTimeout:       60 * time.Second,
 		MaxHeaderBytes:    16 << 10,
 	}

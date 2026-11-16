@@ -15,6 +15,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 	"unicode/utf8"
 
@@ -73,6 +74,11 @@ type server struct {
 	// cannot collect, and collectOff tells the person why.
 	collect    *Runner
 	collectOff string
+	// letter drafts a cover letter when the panel asks. Nil when this
+	// server writes none, and letterOff tells the person why.
+	letter     LetterFunc
+	letterOff  string
+	letterBusy sync.Mutex
 }
 
 // New returns the API over a store. Every route but /health needs the
@@ -89,12 +95,18 @@ type Options struct {
 	// CollectOff tells the person why there is no collecting, when Collect
 	// is nil.
 	CollectOff string
+	// Letter drafts the cover letter of a posting. Nil turns the button
+	// off.
+	Letter LetterFunc
+	// LetterOff tells the person why there is no letter, when Letter is
+	// nil.
+	LetterOff string
 }
 
 // NewLocal returns the API for the panel that runs on the owner's machine:
 // no token, and only requests that LocalOnly lets through.
 func NewLocal(store tracker.Store, o Options) http.Handler {
-	s := &server{store: store, now: time.Now, logf: log.Printf, collect: o.Collect, collectOff: o.CollectOff}
+	s := &server{store: store, now: time.Now, logf: log.Printf, collect: o.Collect, collectOff: o.CollectOff, letter: o.Letter, letterOff: o.LetterOff}
 	return LocalOnly(newServer(s, anyone{}))
 }
 
@@ -103,6 +115,7 @@ func newServer(s *server, auth Authenticator) http.Handler {
 	private.HandleFunc("GET /jobs", s.list)
 	private.HandleFunc("GET /jobs/{number}", s.show)
 	private.HandleFunc("PATCH /jobs/{number}", s.update)
+	private.HandleFunc("POST /jobs/{number}/letter", s.letterDraft)
 	private.HandleFunc("GET /funnel", s.funnel)
 	private.HandleFunc("GET /collect", s.collectStatus)
 	private.HandleFunc("POST /collect", s.collectStart)
@@ -172,6 +185,9 @@ type detailView struct {
 	Reasons []string     `json:"reasons"`
 	History []eventView  `json:"history"`
 	Posting *postingView `json:"posting"`
+	// LetterOff is why this server drafts no cover letter; empty when it
+	// does.
+	LetterOff string `json:"letter_off"`
 }
 
 func view(e tracker.Entry, fresh map[int]bool) jobView {
@@ -289,7 +305,7 @@ func (s *server) detail(w http.ResponseWriter, r *http.Request, e tracker.Entry)
 		s.fail(w, r, err)
 		return
 	}
-	d := detailView{jobView: view(e, tracker.NewToday(all)), Reasons: e.Reasons, History: []eventView{}}
+	d := detailView{jobView: view(e, tracker.NewToday(all)), Reasons: e.Reasons, History: []eventView{}, LetterOff: s.letterOffReason()}
 	if d.Reasons == nil {
 		d.Reasons = []string{}
 	}

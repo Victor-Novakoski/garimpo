@@ -9,6 +9,7 @@ O Garimpo guarda dados de uma pessoa só (as vagas que ela marcou, anotações, 
 | Ler o banco pela API REST do Supabase | RLS ligado sem nenhuma policy | `internal/db` |
 | Vazar a URL do banco | Só no ambiente; nunca em flag, log ou erro | `internal/db`, `internal/tracker` |
 | Uma vaga manipular a IA | Texto marcado como dado, `claude -p` sem ferramentas, classe fixa com teto | `internal/ai` |
+| Uma vaga manipular a carta de apresentação | Mesmas travas da nota; a carta é só um rascunho em texto, que a pessoa lê antes de enviar | `internal/ai`, `web/` |
 | Uma vaga injetar HTML ou link perigoso no painel | Texto sempre como texto; link só `http`/`https`; política de conteúdo restrita | `web/`, `internal/panel` |
 | Abusar das fontes ou ferir os termos delas | Coleta educada e fontes conferidas antes de entrar | `internal/httpx`, [SOURCES.md](SOURCES.md) |
 | Dados pessoais no repositório | `profile.yaml`, `.env` e dados privados no `.gitignore` | raiz |
@@ -23,7 +24,7 @@ O painel não tem login, então a proteção é conferir de onde vem cada pedido
 
 Não existe flag para trocar o endereço do `serve`, só a porta. As páginas saem com uma política de conteúdo que só carrega o que vem do próprio servidor e não deixa a página ser posta num `iframe`.
 
-O botão "Buscar vagas" (`POST /api/collect`) não leva nenhuma opção: a coleta é a que o `serve` recebeu por flag ao subir. O máximo que um pedido indevido conseguiria é rodar a mesma coleta que o dono já roda, uma por vez.
+O botão "Buscar vagas" (`POST /api/collect`) não leva nenhuma opção: a coleta é a que o `serve` recebeu por flag ao subir. O máximo que um pedido indevido conseguiria é rodar a mesma coleta que o dono já roda, uma por vez. O botão "Gerar carta" (`POST /api/jobs/{número}/letter`) segue a mesma ideia: o pedido só diz o número da vaga, e o servidor escreve uma carta por vez.
 
 ## API avulsa e banco
 
@@ -37,4 +38,5 @@ O botão "Buscar vagas" (`POST /api/collect`) não leva nenhuma opção: a colet
 O texto vem da internet e é tratado como dado em todo lugar:
 
 - **Na IA**, vai marcado como dado e o prompt manda ignorar instruções dentro dele. O modo local roda o `claude -p` sem ferramentas, sem MCP, em modo seguro, numa pasta vazia e sem `ANTHROPIC_API_KEY` no ambiente. Mesmo que uma vaga engane o modelo, o máximo que ela consegue é a própria classe: 30 pontos, numa vaga que já passou no filtro. Resposta fora do formato é descartada.
+- **Na carta de apresentação**, a vaga e a leitura anterior da IA (que nasceu do texto da vaga) vão marcadas como dado, com as mesmas travas. Uma vaga que engane o modelo consegue, no máximo, piorar um rascunho: nada é enviado, e a pessoa lê o texto antes de usar. O prompt só deixa afirmar sobre a pessoa o que está no perfil.
 - **Na tela**, nunca vira HTML, e o link da vaga só vira link se for `http` ou `https`.

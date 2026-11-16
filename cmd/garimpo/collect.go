@@ -387,16 +387,7 @@ func whyLines(r ai.Ranked, withAI bool) []string {
 	}
 	switch {
 	case r.AI != nil:
-		lines = append(lines, fmt.Sprintf("%+d IA, encaixe %s: %s", r.AI.Points(), r.AI.Fit.Label(), r.AI.Summary))
-		for _, s := range r.AI.Strengths {
-			lines = append(lines, "    a favor: "+s)
-		}
-		for _, s := range r.AI.Gaps {
-			lines = append(lines, "    falta: "+s)
-		}
-		for _, s := range r.AI.Highlights {
-			lines = append(lines, "    destaque: "+s)
-		}
+		lines = append(lines, ai.ReasonLines(*r.AI)...)
 	case r.AIError != "":
 		lines = append(lines, "+0 IA não avaliou: "+r.AIError)
 	case withAI:

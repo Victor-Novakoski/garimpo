@@ -51,9 +51,13 @@ Cada item é uma frase só, de até 20 palavras. Não preencha lista por preench
 // System builds the system prompt: the fixed instructions and the profile.
 // It is the same for every job of a run, so the API can cache it.
 func System(p profile.Profile) string {
+	return instructions + "\n\n" + profileBlock(p)
+}
+
+// profileBlock is the profile, marked as such, for any prompt.
+func profileBlock(p profile.Profile) string {
 	var b strings.Builder
-	b.WriteString(instructions)
-	b.WriteString("\n\n<perfil>\n")
+	b.WriteString("<perfil>\n")
 	fmt.Fprintf(&b, "Nível: %s\n", p.Seniority)
 	fmt.Fprintf(&b, "Aceita modelo de trabalho: %s (prefere %s)\n", join(p.Accept.WorkModes), join(p.Prefer.WorkModes))
 	fmt.Fprintf(&b, "Aceita contrato: %s (prefere %s)\n", join(p.Accept.Contracts), join(p.Prefer.Contracts))
@@ -80,6 +84,11 @@ func System(p profile.Profile) string {
 
 // User builds the message for one job.
 func User(j job.Job) string {
+	return postingBlock(j) + "\n\nAvalie o encaixe desta vaga com o perfil."
+}
+
+// postingBlock is the posting, marked as data, for any prompt.
+func postingBlock(j job.Job) string {
 	var b strings.Builder
 	b.WriteString("<vaga>\n")
 	field := func(name, value string) {
@@ -104,13 +113,14 @@ func User(j job.Job) string {
 		desc = []rune("não informada")
 	}
 	b.WriteString(string(desc))
-	b.WriteString("\n</vaga>\n\nAvalie o encaixe desta vaga com o perfil.")
+	b.WriteString("\n</vaga>")
 	return b.String()
 }
 
 // sanitize keeps scraped text from closing the tag that marks it as data.
 var sanitize = strings.NewReplacer(
 	"</vaga>", "", "<vaga>", "", "</perfil>", "", "<perfil>", "",
+	"</leitura>", "", "<leitura>", "",
 ).Replace
 
 func join[T ~string](values []T) string {
