@@ -117,8 +117,8 @@ func newServer(s *server, auth Authenticator) http.Handler {
 	private.HandleFunc("PATCH /jobs/{number}", s.update)
 	private.HandleFunc("POST /jobs/{number}/letter", s.letterDraft)
 	private.HandleFunc("GET /funnel", s.funnel)
-	private.HandleFunc("GET /collect", s.collectStatus)
-	private.HandleFunc("POST /collect", s.collectStart)
+	private.HandleFunc("GET /search", s.collectStatus)
+	private.HandleFunc("POST /search", s.collectStart)
 
 	root := http.NewServeMux()
 	root.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) {

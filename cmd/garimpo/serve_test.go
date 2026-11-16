@@ -94,11 +94,11 @@ func TestServeCollectsFromThePanel(t *testing.T) {
 		t.Errorf("/jobs outside /api = %d %v", code, out)
 	}
 
-	if code, out := call(t, srv, "POST", "/api/collect"); code != 202 {
+	if code, out := call(t, srv, "POST", "/api/search"); code != 202 {
 		t.Fatalf("start = %d %v", code, out)
 	}
 	runner.Wait()
-	code, out := call(t, srv, "GET", "/api/collect")
+	code, out := call(t, srv, "GET", "/api/search")
 	if code != 200 || out["running"] != false || out["error"] != nil {
 		t.Fatalf("after the collection = %d %v", code, out)
 	}

@@ -98,11 +98,11 @@ func TestDemoServesThePanelWithoutCollecting(t *testing.T) {
 	if p, _ := out["posting"].(map[string]any); p == nil || p["description"] == "" || p["source"] != demoSource {
 		t.Errorf("posting = %v", out["posting"])
 	}
-	code, out = call(t, srv, "GET", "/api/collect")
+	code, out = call(t, srv, "GET", "/api/search")
 	if code != 200 || out["available"] != false || out["reason"] != demoOptions.CollectOff {
 		t.Errorf("collect = %d %v", code, out)
 	}
-	if code, _ := call(t, srv, "POST", "/api/collect"); code < 400 {
+	if code, _ := call(t, srv, "POST", "/api/search"); code < 400 {
 		t.Errorf("the demo started a collection: %d", code)
 	}
 }

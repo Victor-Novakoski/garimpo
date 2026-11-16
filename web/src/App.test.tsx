@@ -320,7 +320,7 @@ describe('collecting from the panel', () => {
 
     expect(await screen.findByRole('button', { name: 'Buscando vagas…' })).toBeDisabled()
     expect(await screen.findByText(/greenhouse:acme 12 vagas/)).toBeInTheDocument()
-    expect(api.calls).toContain('POST /api/collect')
+    expect(api.calls).toContain('POST /api/search')
 
     expect(await screen.findByText(/Coleta concluída/)).toBeInTheDocument()
     expect(await screen.findByRole('heading', { name: 'Dev React' })).toBeInTheDocument()

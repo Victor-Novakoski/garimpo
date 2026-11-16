@@ -110,8 +110,8 @@ export function fakeApi(jobs: JobDetail[] = []): FakeApi {
       const path = url.pathname.replace(/^\/api/, '')
       if (path === '/jobs' && method === 'GET') return answer(200, { jobs: listed(api, url.searchParams.get('status')) })
       if (path === '/funnel') return answer(200, funnel(api))
-      if (path === '/collect' && method === 'GET') return answer(200, api.collect)
-      if (path === '/collect' && method === 'POST') {
+      if (path === '/search' && method === 'GET') return answer(200, api.collect)
+      if (path === '/search' && method === 'POST') {
         if (api.collect.running || !api.collect.available) return answer(409, api.collect)
         api.collect = { ...api.collect, running: true, started_at: '2026-11-12T13:00:00Z', finished_at: null, log: '', error: undefined }
         api.onCollect(api)
