@@ -68,6 +68,26 @@ func TestClassify(t *testing.T) {
 			want: job.Job{WorkMode: job.WorkModeRemote},
 		},
 		{
+			name: "description states the work mode in a whole phrase",
+			in:   job.Job{Title: "Senior Software Engineer", Location: "Brasil", Description: `Our team operates under a "remote-first" model.`},
+			want: job.Job{WorkMode: job.WorkModeRemote, Seniority: job.SenioritySenior},
+		},
+		{
+			name: "loose words in the description do not count",
+			in:   job.Job{Title: "Dev Go", Description: "Equipes remotas e híbridas, com reuniões presenciais e contato online e presencial."},
+			want: job.Job{},
+		},
+		{
+			name: "title wins over the description",
+			in:   job.Job{Title: "Dev Go (Remoto)", Description: "Disponibilidade para trabalho presencial no onboarding."},
+			want: job.Job{WorkMode: job.WorkModeRemote},
+		},
+		{
+			name: "100% presencial beats the company paragraph",
+			in:   job.Job{Title: "Dev Go", Description: "Posição no modelo 100% presencial.\n\nModelo de Trabalho Presencial Flexível"},
+			want: job.Job{WorkMode: job.WorkModeOnsite},
+		},
+		{
 			name: "levels as roman numerals",
 			in:   job.Job{Title: "[Crédito] Software Engineer III - C#"},
 			want: job.Job{Seniority: job.SeniorityMid},
