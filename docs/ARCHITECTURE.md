@@ -38,7 +38,7 @@ Os cortes são o ponto de partida e mudam depois de duas semanas de uso. Como ca
 
 ## Banco e API
 
-O registro fica atrás de uma interface (`tracker.Store`) com duas implementações, um arquivo local e o Postgres, que aplicam as mesmas regras e passam pelos mesmos testes. Com `GARIMPO_DATABASE_URL` definida é o banco; sem ela, o arquivo.
+O registro fica atrás de uma interface (`tracker.Store`) com três implementações que aplicam as mesmas regras e passam pelos mesmos testes: um arquivo local, o Postgres e a memória. Com `GARIMPO_DATABASE_URL` definida é o banco; sem ela, o arquivo. A memória é só do modo demo.
 
 | Tabela | O que guarda |
 | --- | --- |
@@ -50,6 +50,10 @@ O registro fica atrás de uma interface (`tracker.Store`) com duas implementaç�
 | `schema_migrations` | quais migrações já foram aplicadas |
 
 A API (`internal/api`) lê e escreve o mesmo registro e sobe de dois jeitos: dentro do `garimpo serve`, sem token e só para o painel local, ou avulsa (`cmd/garimpo-api`), com o token do dono. As rotas estão no [README](../README.md#api-avulsa) e no [FLOW.md](FLOW.md).
+
+## Modo demo
+
+O `garimpo serve -demo` sobe o painel com vagas inventadas (`demo/vagas.json`) e o perfil de exemplo, sem banco e sem rede. As vagas passam pelos passos 2 a 6 de verdade; só a leitura da IA vem pronta no arquivo. Nada é gravado (decisão 043).
 
 ## Perfil
 

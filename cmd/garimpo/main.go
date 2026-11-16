@@ -20,6 +20,7 @@ Uso:
 Comandos:
   collect   coleta as vagas e mostra a lista do dia
   serve     abre o painel no navegador, só nesta máquina: garimpo serve
+            (garimpo serve -demo mostra o painel com vagas de exemplo)
   mark      marca o que você fez com uma vaga: garimpo mark 12 apliquei
   note      anota algo numa vaga: garimpo note 12 "falei com a Ana"
   list      mostra as vagas que você marcou (vou aplicar, apliquei, entrevista)

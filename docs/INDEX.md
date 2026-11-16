@@ -17,4 +17,5 @@
 | [`internal/db/CLAUDE.md`](../internal/db/CLAUDE.md) | for mudar o banco, criar uma migração ou rodar os testes do banco |
 | [`internal/api/CLAUDE.md`](../internal/api/CLAUDE.md) | for adicionar ou mudar uma rota, o token ou a trava do painel local |
 | [`web/CLAUDE.md`](../web/CLAUDE.md) | for mexer no painel em React |
+| [`demo/vagas.json`](../demo/vagas.json) | for mudar as vagas de exemplo do modo demo (o que elas viram está em `cmd/garimpo/demo.go` e na decisão 043) |
 | [`docs/decisoes/`](decisoes/) | quiser saber por que algo é como é, ou for tomar uma decisão de arquitetura nova |

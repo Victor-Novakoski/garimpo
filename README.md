@@ -71,6 +71,14 @@ go run ./cmd/garimpo serve -ai local    # o botão "Buscar vagas" também pede a
 go run ./cmd/garimpo serve -port 9000   # outra porta
 ```
 
+Para ver o painel sem configurar nada, com vagas e perfil de exemplo:
+
+```bash
+go run ./cmd/garimpo serve -demo        # sem banco, sem rede; o que você marcar some ao fechar
+```
+
+As vagas do demo são inventadas (ficam em `demo/vagas.json`) e passam pelo filtro e pela nota de verdade, com o `profile.example.yaml`. Só a leitura da IA vem pronta no arquivo.
+
 - **Lista do dia**: nota, estado, empresa, modelo e link, com "vou aplicar" no topo. Um clique marca (vou aplicar, apliquei, descartar) e o aviso que aparece deixa desfazer.
 - **Filtros**: por estado (vou aplicar, apliquei, entrevista, em andamento, descartadas, todas) e busca por vaga ou empresa.
 - **Vaga**: por que a nota é aquela, o que a IA disse (encaixe, a favor, o que falta, o que destacar), anotação e histórico com datas.
