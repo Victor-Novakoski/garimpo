@@ -5,6 +5,7 @@ O painel em React + Vite + TypeScript. Não tem deploy: o build vai para `intern
 ## Regras
 
 - **Texto de vaga é texto.** Nunca `dangerouslySetInnerHTML`. Link de vaga só passa por `safeUrl` (`http`/`https`).
+- **A carta de apresentação também é texto:** vai num `textarea`, nunca em HTML, e vive só na tela (nada de `localStorage`). O painel não envia a carta a lugar nenhum; só copia.
 - Sem biblioteca de rotas, de estado ou de componentes: as telas ficam no `#` do endereço (`router.ts`), e depois de cada mudança a tela lê de novo do servidor, que é quem sabe as regras.
 - Todas as chamadas ficam em `api.ts`; textos e datas em `format.ts`.
 - **O build não vai para o git.** `internal/panel/dist/` guarda só o `.gitkeep`.
@@ -18,4 +19,4 @@ O painel em React + Vite + TypeScript. Não tem deploy: o build vai para `intern
 
 ## Ver também
 
-Decisões 034, 035 e 038; [`docs/SECURITY.md`](../docs/SECURITY.md).
+Decisões 034, 035, 038 e 043; [`docs/SECURITY.md`](../docs/SECURITY.md).

@@ -45,6 +45,8 @@ export interface JobDetail extends Job {
   reasons: string[]
   history: StatusChange[]
   posting: Posting | null
+  /** Why this server drafts no cover letter; empty when it does. */
+  letter_off: string
 }
 
 export interface Stage {
