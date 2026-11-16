@@ -8,12 +8,14 @@ import (
 	"fmt"
 	"html"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/victor-novakoski/garimpo/internal/httpx"
 	"github.com/victor-novakoski/garimpo/internal/job"
+	"github.com/victor-novakoski/garimpo/internal/normalize"
 )
 
 // Host is the only host this collector calls.
@@ -79,7 +81,38 @@ type response struct {
 		Departments []struct {
 			Name string `json:"name"`
 		} `json:"departments"`
+		Metadata []metadata `json:"metadata"`
 	} `json:"jobs"`
+}
+
+// metadata is one custom field the company added to its board. The value
+// is a string, a list, a number, a boolean or null, depending on the field.
+type metadata struct {
+	Name  string          `json:"name"`
+	Value json.RawMessage `json:"value"`
+}
+
+// workModeFields are the names companies give to the custom field that
+// holds the work mode, folded. Wildlife calls it "Work Model".
+var workModeFields = []string{"work model", "work mode", "workplace", "modelo de trabalho"}
+
+// workMode reads the work mode from the company's own field, when the board
+// has one. Most boards do not; those are left for the normalizer, which
+// reads the title, the location and the description.
+func workMode(fields []metadata) job.WorkMode {
+	for _, f := range fields {
+		if !slices.Contains(workModeFields, normalize.Fold(f.Name)) {
+			continue
+		}
+		var value string
+		if err := json.Unmarshal(f.Value, &value); err != nil {
+			continue // null or not a text field
+		}
+		if m := normalize.WorkMode(value); m != job.WorkModeUnknown {
+			return m
+		}
+	}
+	return job.WorkModeUnknown
 }
 
 // Collect fetches the board in one request.
@@ -108,6 +141,7 @@ func (c Collector) Collect(ctx context.Context) ([]job.Job, error) {
 			Location:    gj.Location.Name,
 			Description: PlainText(gj.Content),
 			Tags:        tags,
+			WorkMode:    workMode(gj.Metadata),
 			PostedAt:    gj.UpdatedAt,
 		})
 	}

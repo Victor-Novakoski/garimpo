@@ -58,8 +58,20 @@ type rule[V any] struct {
 var workModeWords = []rule[job.WorkMode]{
 	// Hybrid first: "remoto/híbrido" postings are not fully remote.
 	{[]string{"hibrido", "hibrida", "hybrid"}, job.WorkModeHybrid},
-	{[]string{"presencial", "onsite", "on site"}, job.WorkModeOnsite},
-	{[]string{"remoto", "remota", "remote", "home office", "anywhere"}, job.WorkModeRemote},
+	{[]string{"presencial", "onsite", "on site", "in office"}, job.WorkModeOnsite},
+	{[]string{"remoto", "remota", "remote", "home office", "anywhere", "teletrabalho"}, job.WorkModeRemote},
+}
+
+// workModePhrases are the statements a description makes about its own work
+// mode. A loose word is not enough there ("reuniões presenciais", "equipes
+// remotas"), so only whole phrases count. The order settles postings that
+// say more than one thing: "100% presencial" in the requirements beats the
+// company paragraph pasted below it, and a hybrid phrase beats a remote one.
+var workModePhrases = []rule[job.WorkMode]{
+	{[]string{"100 presencial", "100 presencialmente"}, job.WorkModeOnsite},
+	{[]string{"modelo hibrido", "formato hibrido", "trabalho hibrido", "regime hibrido", "presencial flexivel", "hybrid model", "work hybrid"}, job.WorkModeHybrid},
+	{[]string{"remote first", "100 remoto", "100 remota", "100 remote", "totalmente remoto", "totalmente remota", "fully remote", "modelo remoto", "formato remoto"}, job.WorkModeRemote},
+	{[]string{"trabalho presencial", "forma presencial", "modelo presencial", "formato presencial", "presencialmente"}, job.WorkModeOnsite},
 }
 
 var contractWords = []rule[job.Contract]{
@@ -80,17 +92,27 @@ var seniorityWords = []rule[job.Seniority]{
 	{[]string{"junior", "jr", "trainee", "associate", "i"}, job.SeniorityJunior},
 }
 
+// WorkMode reads a work mode from a short label, such as the value of a
+// source's own work model field ("Híbrido/Hybrid", "In-Office").
+func WorkMode(label string) job.WorkMode {
+	return firstMatch(workModeWords, wordText(label))
+}
+
 // Classify fills WorkMode, Contract and Seniority when the source left them
 // unknown. The title wins over the location, which wins over the labels:
 // community repos often carry contradicting labels ("Remoto" and "Híbrido")
-// while the title states the real one. Description text is not used: it
-// mentions other levels and models too often.
+// while the title states the real one. The description is the last resort
+// for the work mode only, and only through whole phrases (workModePhrases):
+// its loose words mention other levels and models too often.
 func Classify(j job.Job) job.Job {
 	title := wordText(j.Title)
 	location := wordText(j.Location)
 	tags := wordText(strings.Join(j.Tags, " "))
 	if j.WorkMode == job.WorkModeUnknown {
 		j.WorkMode = firstMatch(workModeWords, title, location, tags)
+	}
+	if j.WorkMode == job.WorkModeUnknown {
+		j.WorkMode = firstMatch(workModePhrases, wordText(j.Description))
 	}
 	if j.Contract == job.ContractUnknown {
 		j.Contract = firstMatch(contractWords, title, tags)
