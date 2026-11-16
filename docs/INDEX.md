@@ -3,7 +3,9 @@
 | Onde | Leia quando... |
 | --- | --- |
 | [`CLAUDE.md`](../CLAUDE.md) | for começar qualquer tarefa: comandos, regras gerais, git |
-| [`README.md`](../README.md) | precisar do passo a passo de uso (CLI, painel, banco, API avulsa) ou for mudar algo que a pessoa vê ao rodar |
+| [`README.md`](../README.md) | precisar da apresentação do projeto (telas, diagrama, stack, decisões principais) ou for mudar o que aparece nela |
+| [`docs/USAGE.md`](USAGE.md) | precisar do passo a passo de uso (CLI, painel, banco, API avulsa) ou for mudar algo que a pessoa vê ao rodar |
+| [`docs/img/`](img/) | for refazer os prints do README: sempre do `garimpo serve -demo`, nunca com dados reais |
 | [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) | precisar da visão geral: o caminho da vaga, as peças, as tabelas e como as duas notas se somam |
 | [`docs/FLOW.md`](FLOW.md) | for mexer em estados da vaga, na lista do dia, em `mark`/`list`/`show`/`note` ou numa tela do painel |
 | [`docs/SECURITY.md`](SECURITY.md) | for mexer em token, banco, painel local, rotas, IA ou texto de vaga na tela, ou revisar se algo está seguro |
@@ -17,4 +19,5 @@
 | [`internal/db/CLAUDE.md`](../internal/db/CLAUDE.md) | for mudar o banco, criar uma migração ou rodar os testes do banco |
 | [`internal/api/CLAUDE.md`](../internal/api/CLAUDE.md) | for adicionar ou mudar uma rota, o token ou a trava do painel local |
 | [`web/CLAUDE.md`](../web/CLAUDE.md) | for mexer no painel em React |
+| [`demo/vagas.json`](../demo/vagas.json) | for mudar as vagas de exemplo do modo demo (o que elas viram está em `cmd/garimpo/demo.go` e na decisão 045) |
 | [`docs/decisoes/`](decisoes/) | quiser saber por que algo é como é, ou for tomar uma decisão de arquitetura nova |

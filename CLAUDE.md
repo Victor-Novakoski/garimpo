@@ -13,6 +13,7 @@ go test -race ./... && go vet ./... && gofmt -l .   # o gofmt tem que sair vazio
 go run ./cmd/garimpo collect -why            # coleta, filtra e dá nota (precisa do profile.yaml)
 go run ./cmd/garimpo collect -ai local -why  # soma a nota da IA pelo claude -p
 go run ./cmd/garimpo serve                   # API + painel em http://127.0.0.1:8080
+go run ./cmd/garimpo serve -demo             # o painel com as vagas de exemplo de demo/vagas.json, sem banco e sem rede
 go run ./cmd/garimpo migrate                 # aplica as migrações no banco de GARIMPO_DATABASE_URL
 go run ./cmd/garimpo-api                     # a API avulsa, com o token em GARIMPO_API_TOKEN
 

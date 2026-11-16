@@ -153,6 +153,21 @@ func TestServeCollectFailuresAreReadable(t *testing.T) {
 	}
 }
 
+func TestParseServeDemo(t *testing.T) {
+	o, err := parseServe([]string{"-demo", "-port", "9000"}, &bytes.Buffer{})
+	if err != nil || !o.demo || o.port != 9000 {
+		t.Fatalf("o = %+v, err = %v", o, err)
+	}
+	// The demo never reads the owner's record, profile or sources.
+	for _, args := range [][]string{
+		{"-demo", "-state", "db"}, {"-demo", "-profile", "profile.yaml"}, {"-demo", "-ai", "local"}, {"-demo", "-gupy"},
+	} {
+		if _, err := parseServe(args, &bytes.Buffer{}); err == nil {
+			t.Errorf("parseServe(%v) accepted", args)
+		}
+	}
+}
+
 // fixedWriter answers a fixed letter and keeps what it was asked.
 type fixedWriter struct {
 	job   job.Job

@@ -1,0 +1,260 @@
+{
+  "postings": [
+    {
+      "id": "101",
+      "title": "[Remoto] Pessoa Desenvolvedora Backend Go Pleno",
+      "company": "Rio Claro Pagamentos",
+      "location": "Brasil",
+      "url": "https://example.com/vagas/rio-claro-backend-go",
+      "tags": ["Go", "PostgreSQL", "PJ", "Pleno", "Remoto"],
+      "description": "A Rio Claro Pagamentos processa cobranças para pequenos comércios do interior.\n\nO time de Conciliação procura alguém para cuidar das APIs que recebem os avisos dos bancos e fecham o caixa do lojista no fim do dia.\n\nRequisitos\n- Go em produção\n- PostgreSQL e SQL sem medo\n- Docker no dia a dia\n- Testes automatizados\n\nDiferenciais\n- Kafka ou outra fila de mensagens\n\nContratação PJ, 100% remoto, horário flexível.",
+      "posted_days_ago": 6,
+      "seen_days_ago": 5,
+      "ai": {
+        "fit": "strong",
+        "summary": "a vaga pede o que o perfil faz todo dia: APIs em Go com PostgreSQL e Docker, remoto e PJ",
+        "strengths": ["3 anos de Go em APIs REST", "PostgreSQL e Docker em produção"],
+        "gaps": ["Kafka aparece só como diferencial"],
+        "highlights": ["as APIs REST em Go que já estão em produção"]
+      },
+      "marks": [{"hours_ago": 70, "to": "saved"}],
+      "note": "Falei com a Marina do RH: faixa de 9 a 11 mil PJ. Mandar até sexta."
+    },
+    {
+      "id": "102",
+      "title": "Desenvolvedor(a) Full Stack Go + React (Remoto, PJ)",
+      "company": "Aroeira Saúde",
+      "location": "Brasil",
+      "url": "https://example.com/vagas/aroeira-full-stack",
+      "tags": ["Go", "React", "TypeScript", "Pleno"],
+      "description": "A Aroeira Saúde faz a agenda e o prontuário de clínicas populares.\n\nVocê vai trabalhar no painel das recepções (React + TypeScript) e na API que ele consome (Go).\n\nRequisitos\n- React com TypeScript\n- Go ou vontade de aprender rápido vindo de outra linguagem de backend\n- PostgreSQL\n\nRemoto, PJ, time de 6 pessoas.",
+      "posted_days_ago": 3,
+      "seen_days_ago": 2,
+      "ai": {
+        "fit": "strong",
+        "summary": "full stack com a mesma dupla do perfil, Go e React, em time pequeno e remoto",
+        "strengths": ["Go e React juntos em produção", "PostgreSQL no dia a dia"],
+        "gaps": [],
+        "highlights": ["um projeto em que fez a API e a tela da mesma funcionalidade"]
+      },
+      "marks": [{"hours_ago": 20, "to": "saved"}]
+    },
+    {
+      "id": "103",
+      "title": "[Remoto] Engenheiro(a) de Software Backend Go Pleno",
+      "company": "Tucano Dados",
+      "location": "Brasil",
+      "url": "https://example.com/vagas/tucano-backend",
+      "tags": ["Go", "Docker", "PJ", "Pleno", "Remoto"],
+      "description": "A Tucano Dados entrega relatórios de vendas para redes de farmácias.\n\nRequisitos\n- Go\n- Docker\n- Filas e processamento em lote\n- Inglês para leitura\n\nPJ, remoto, com encontros presenciais duas vezes por ano.",
+      "posted_days_ago": 1,
+      "seen_days_ago": 0,
+      "ai": {
+        "fit": "good",
+        "summary": "a base em Go bate, mas o trabalho é mais de processamento em lote do que de API",
+        "strengths": ["Go e Docker em produção"],
+        "gaps": ["processamento em lote e filas não aparecem no perfil"],
+        "highlights": ["o cuidado com reprocessamento e erro nas APIs que já fez"]
+      }
+    },
+    {
+      "id": "104",
+      "title": "[Remoto] Dev Frontend React Pleno",
+      "company": "Jabuti Educação",
+      "location": "Brasil",
+      "url": "https://example.com/vagas/jabuti-frontend",
+      "tags": ["React", "TypeScript", "Next.js", "PJ", "Pleno", "Remoto"],
+      "description": "A Jabuti Educação faz a plataforma de aulas de reforço de escolas públicas.\n\nRequisitos\n- React e TypeScript\n- Next.js\n- Acessibilidade de verdade: leitor de tela e teclado\n\nPJ, remoto.",
+      "posted_days_ago": 4,
+      "seen_days_ago": 2,
+      "ai": {
+        "fit": "good",
+        "summary": "o front bate com o perfil, mas a vaga não usa Go, que é o ponto forte",
+        "strengths": ["React e TypeScript em produção"],
+        "gaps": ["pouca prática com acessibilidade", "sem backend na vaga"],
+        "highlights": ["as telas que entregou em React e os testes delas"]
+      }
+    },
+    {
+      "id": "105",
+      "title": "Desenvolvedor Backend Pleno (Remoto)",
+      "company": "Maré Alta Energia",
+      "location": "Brasil",
+      "url": "https://example.com/vagas/mare-alta-backend",
+      "tags": ["Backend", "CLT", "Pleno"],
+      "description": "A Maré Alta Energia acompanha usinas solares de pequeno porte.\n\nRequisitos\n- Uma linguagem de backend em produção (usamos Go e um pouco de Python)\n- PostgreSQL\n- Docker\n\nCLT, remoto, benefícios completos.",
+      "posted_days_ago": 9,
+      "seen_days_ago": 5,
+      "ai": {
+        "fit": "good",
+        "summary": "backend em Go com PostgreSQL, mas em CLT, que o perfil aceita sem preferir",
+        "strengths": ["Go, PostgreSQL e Docker nos requisitos"],
+        "gaps": ["Python aparece como segunda linguagem"],
+        "highlights": ["a experiência com APIs em Go"]
+      },
+      "marks": [{"hours_ago": 96, "to": "saved"}, {"hours_ago": 72, "to": "applied"}],
+      "note": "Candidatura pelo site. Pediram pretensão: informei a faixa do anúncio."
+    },
+    {
+      "id": "106",
+      "title": "[Remoto] Pessoa Engenheira de Software Go Sênior",
+      "company": "Pequi Labs",
+      "location": "Brasil",
+      "url": "https://example.com/vagas/pequi-go-senior",
+      "tags": ["Go", "PostgreSQL", "PJ", "Sênior", "Remoto"],
+      "description": "A Pequi Labs faz o sistema de pedidos de cooperativas agrícolas.\n\nRequisitos\n- Go em sistemas com muito acesso\n- PostgreSQL: índices, planos de consulta\n- Experiência puxando decisões técnicas\n\nPJ, remoto.",
+      "posted_days_ago": 8,
+      "seen_days_ago": 5,
+      "ai": {
+        "fit": "partial",
+        "summary": "a stack é a do perfil, mas a vaga espera alguém que já lidera decisões técnicas",
+        "strengths": ["Go e PostgreSQL em produção"],
+        "gaps": ["nível sênior, um acima do perfil", "sem histórico de liderança técnica"],
+        "highlights": ["as decisões de arquitetura que tomou nos próprios projetos"]
+      },
+      "marks": [{"hours_ago": 100, "to": "applied"}, {"hours_ago": 30, "to": "interview"}],
+      "note": "Conversa com o Otávio (tech lead) na quinta, 15h. Rever índices do Postgres."
+    },
+    {
+      "id": "107",
+      "title": "Dev Full Stack Node + React Pleno - Remoto",
+      "company": "Ipê Seguros",
+      "location": "Brasil",
+      "url": "https://example.com/vagas/ipe-full-stack",
+      "tags": ["Node.js", "React", "TypeScript", "CLT", "Pleno"],
+      "description": "A Ipê Seguros vende seguro de celular e bicicleta pelo aplicativo.\n\nRequisitos\n- Node.js com TypeScript\n- React\n- PostgreSQL\n\nCLT, remoto.",
+      "posted_days_ago": 2,
+      "seen_days_ago": 0,
+      "ai": {
+        "fit": "partial",
+        "summary": "o front e o banco batem, mas o backend é Node, que o perfil conhece menos que Go",
+        "strengths": ["React, TypeScript e PostgreSQL em produção"],
+        "gaps": ["Node.js como linguagem principal do backend"],
+        "highlights": ["a facilidade de trocar de linguagem no backend"]
+      }
+    },
+    {
+      "id": "108",
+      "title": "[Remoto] Desenvolvedor Mobile React Native Pleno",
+      "company": "Sabiá Mobilidade",
+      "location": "Brasil",
+      "url": "https://example.com/vagas/sabia-mobile",
+      "tags": ["React Native", "TypeScript", "PJ", "Pleno", "Remoto"],
+      "description": "A Sabiá Mobilidade faz o aplicativo de bilhete de ônibus de cidades médias.\n\nRequisitos\n- React Native publicado nas lojas\n- TypeScript\n- Uso offline e sincronização\n\nPJ, remoto.",
+      "posted_days_ago": 5,
+      "seen_days_ago": 2,
+      "ai": {
+        "fit": "weak",
+        "summary": "o perfil é de web e backend; a vaga pede aplicativo publicado e uso offline",
+        "strengths": ["TypeScript e React ajudam na entrada"],
+        "gaps": ["nenhum aplicativo publicado nas lojas", "sincronização offline"],
+        "highlights": []
+      }
+    },
+    {
+      "id": "109",
+      "title": "Software Engineer, Backend (Go)",
+      "company": "Guará Bank",
+      "location": "São Paulo",
+      "url": "https://example.com/vagas/guara-backend",
+      "tags": ["Go"],
+      "description": "O Guará Bank é uma conta digital para caminhoneiros autônomos.\n\nRequisitos\n- Go\n- Mensageria\n- Inglês avançado\n\nO anúncio não diz o modelo de trabalho nem o tipo de contrato.",
+      "posted_days_ago": 2,
+      "seen_days_ago": 0,
+      "ai": {
+        "fit": "partial",
+        "summary": "Go bate, mas a vaga não diz se é remota e pede inglês avançado",
+        "strengths": ["Go em produção"],
+        "gaps": ["inglês avançado", "modelo de trabalho não informado"],
+        "highlights": ["perguntar logo no começo se a vaga é remota"]
+      }
+    },
+    {
+      "id": "110",
+      "title": "[Remoto] Dev Frontend Angular Pleno",
+      "company": "Serra Azul Telecom",
+      "location": "Brasil",
+      "url": "https://example.com/vagas/serra-azul-angular",
+      "tags": ["Angular", "TypeScript", "PJ", "Pleno", "Remoto"],
+      "description": "A Serra Azul Telecom é um provedor de internet regional.\n\nRequisitos\n- Angular\n- TypeScript\n- RxJS\n\nPJ, remoto.",
+      "posted_days_ago": 7,
+      "seen_days_ago": 5,
+      "marks": [{"hours_ago": 90, "to": "discarded"}],
+      "note": "Só Angular, não é o que procuro agora."
+    },
+    {
+      "id": "111",
+      "title": "[Remoto] Pessoa Desenvolvedora Python Pleno",
+      "company": "Vitória-Régia Turismo",
+      "location": "Brasil",
+      "url": "https://example.com/vagas/vitoria-regia-python",
+      "tags": ["Python", "Django", "Docker", "PJ", "Pleno", "Remoto"],
+      "description": "A Vitória-Régia Turismo vende passeios de barco e hospedagem na Amazônia.\n\nRequisitos\n- Python e Django\n- Docker\n\nPJ, remoto."
+      ,
+      "posted_days_ago": 3,
+      "seen_days_ago": 2
+    },
+    {
+      "id": "112",
+      "title": "[Remoto] Desenvolvedor Go Júnior",
+      "company": "Baobá Software",
+      "location": "Brasil",
+      "url": "https://example.com/vagas/baoba-go-junior",
+      "tags": ["Go", "PJ", "Júnior", "Remoto"],
+      "description": "A Baobá Software é uma fábrica de software pequena, com clientes do varejo.\n\nRequisitos\n- Go, mesmo que só em projetos pessoais\n- Git\n- Vontade de aprender\n\nPJ, remoto.",
+      "posted_days_ago": 1,
+      "seen_days_ago": 0,
+      "ai": {
+        "fit": "good",
+        "summary": "o perfil sobra para o que a vaga pede; o risco é a faixa de júnior",
+        "strengths": ["Go em produção, mais do que a vaga pede"],
+        "gaps": ["nível júnior, um abaixo do perfil"],
+        "highlights": ["perguntar se há espaço para entrar como pleno"]
+      }
+    },
+    {
+      "id": "113",
+      "title": "Pessoa Desenvolvedora Backend Go Pleno - Remoto",
+      "company": "Rio Claro Pagamentos",
+      "location": "Brasil",
+      "url": "https://example.com/vagas/rio-claro-backend-go-2",
+      "tags": ["Go", "PJ", "Pleno", "Remoto"],
+      "description": "A mesma vaga da Rio Claro Pagamentos, publicada de novo em outra fonte. O Garimpo junta as duas numa só.",
+      "posted_days_ago": 4,
+      "seen_days_ago": 5
+    },
+    {
+      "id": "114",
+      "title": "[Presencial] Desenvolvedor Full Stack Go + React Pleno",
+      "company": "Mandacaru Agro",
+      "location": "Petrolina, PE",
+      "url": "https://example.com/vagas/mandacaru-full-stack",
+      "tags": ["Go", "React", "CLT", "Pleno", "Presencial"],
+      "description": "A Mandacaru Agro faz o controle de irrigação de fazendas de fruta.\n\nPresencial em Petrolina. O filtro corta esta vaga: o perfil de exemplo só aceita remoto.",
+      "posted_days_ago": 3,
+      "seen_days_ago": 2
+    },
+    {
+      "id": "115",
+      "title": "[Remoto] Desenvolvedor Backend Go Pleno",
+      "company": "Araucária Logística",
+      "location": "Brasil",
+      "url": "https://example.com/vagas/araucaria-backend",
+      "tags": ["Go", "PJ", "Pleno", "Remoto"],
+      "description": "A Araucária faz roteirização de entregas. O filtro corta esta vaga: o perfil de exemplo evita o setor de logística.",
+      "posted_days_ago": 2,
+      "seen_days_ago": 0
+    },
+    {
+      "id": "116",
+      "title": "[Remoto] Tech Lead Backend",
+      "company": "Cajuína Mercado",
+      "location": "Brasil",
+      "url": "https://example.com/vagas/cajuina-tech-lead",
+      "tags": ["Go", "PJ", "Remoto"],
+      "description": "A Cajuína Mercado faz o caixa de mercadinhos de bairro. O filtro corta esta vaga: o nível de liderança fica fora do que o perfil de exemplo aceita.",
+      "posted_days_ago": 2,
+      "seen_days_ago": 0
+    }
+  ]
+}
