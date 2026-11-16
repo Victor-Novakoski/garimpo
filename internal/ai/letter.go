@@ -107,7 +107,10 @@ Como escrever
 
 - Só afirme sobre a pessoa o que está no perfil. Não invente empresa, projeto, número, tempo de experiência, formação, idioma nem certificado. Tecnologia que o perfil não cita não entra como experiência.
 - Ligue dois ou três requisitos reais da vaga à experiência do perfil, começando pelo que a leitura mandou destacar.
-- Se falta um requisito importante, não finja que não falta: ou deixe de fora, ou diga em uma frase a base parecida que a pessoa tem.
+- A carta mostra o que a pessoa tem. O que falta ocupa no máximo uma frase na carta inteira, e só quando é um requisito obrigatório da vaga: diga a base parecida que a pessoa tem e siga em frente. Não liste lacunas, não peça desculpa e não repita que a pessoa "não tem" ou "não conhece" algo. Diferencial ou desejável que falta fica de fora.
+- Não escreva que a pessoa tem outro emprego, que trabalha em tempo integral, que procura um segundo trabalho ou uma renda extra, nem quantas horas ela tem livres ou se a vaga cabe na agenda dela. A experiência do trabalho atual entra como experiência ("no trabalho atual, faço..."); a disponibilidade é assunto da pessoa na conversa com a empresa.
+- Não fale de salário, valor por hora nem pretensão. O tipo de contrato só entra se a vaga pedir que a candidatura diga.
+- O perfil pode ter recados da pessoa sobre o que citar ou não citar e quando. Siga esses recados.
 - Fale da empresa só com o que a vaga diz. Sem elogio genérico.
 - Tom direto e humano, em primeira pessoa, sem frase feita ("venho por meio desta", "sou apaixonado por", "acredito que posso agregar").
 - De 120 a 220 palavras, em três ou quatro parágrafos curtos separados por uma linha em branco.
