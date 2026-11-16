@@ -53,7 +53,7 @@ A API (`internal/api`) lê e escreve o mesmo registro e sobe de dois jeitos: den
 
 ## Modo demo
 
-O `garimpo serve -demo` sobe o painel com vagas inventadas (`demo/vagas.json`) e o perfil de exemplo, sem banco e sem rede. As vagas passam pelos passos 2 a 6 de verdade; só a leitura da IA vem pronta no arquivo. Nada é gravado (decisão 044).
+O `garimpo serve -demo` sobe o painel com vagas inventadas (`demo/vagas.json`) e o perfil de exemplo, sem banco e sem rede. As vagas passam pelos passos 2 a 6 de verdade; só a leitura da IA vem pronta no arquivo. Nada é gravado (decisão 045).
 
 ## Perfil
 

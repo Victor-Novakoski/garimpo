@@ -61,7 +61,7 @@ Cada escolha tem um arquivo em [`docs/decisoes/`](docs/decisoes/), com o context
 - **O painel roda só na máquina.** Escuta em `127.0.0.1`, só atende a própria página, sem login e sem deploy. ([041](docs/decisoes/041-o-painel-roda-so-na-maquina-do.md))
 - **Banco fechado por padrão.** As tabelas nascem com RLS ligado e nenhuma policy: a API REST do Supabase não lê nem escreve nada. ([029](docs/decisoes/029-tabelas-com-rls-ligado-e-nenhuma-policy.md))
 - **Painel sem biblioteca de rotas, de estado ou de componentes.** São três telas: React, CSS próprio e o `#` do endereço dão conta. ([034](docs/decisoes/034-painel-sem-biblioteca-de-rotas-de-estado.md))
-- **O demo passa pela coleta de verdade.** As vagas de exemplo recebem a nota do mesmo código, então o demo não mostra o que o Garimpo não faria. ([044](docs/decisoes/044-o-modo-demo-passa-pela-coleta-de.md))
+- **O demo passa pela coleta de verdade.** As vagas de exemplo recebem a nota do mesmo código, então o demo não mostra o que o Garimpo não faria. ([045](docs/decisoes/045-o-modo-demo-passa-pela-coleta-de.md))
 
 ## Usando com as suas vagas
 
