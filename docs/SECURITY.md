@@ -24,7 +24,7 @@ O painel não tem login, então a proteção é conferir de onde vem cada pedido
 
 Não existe flag para trocar o endereço do `serve`, só a porta. As páginas saem com uma política de conteúdo que só carrega o que vem do próprio servidor e não deixa a página ser posta num `iframe`.
 
-O botão "Buscar vagas" (`POST /api/collect`) não leva nenhuma opção: a coleta é a que o `serve` recebeu por flag ao subir. O máximo que um pedido indevido conseguiria é rodar a mesma coleta que o dono já roda, uma por vez. O botão "Gerar carta" (`POST /api/jobs/{número}/letter`) segue a mesma ideia: o pedido só diz o número da vaga, e o servidor escreve uma carta por vez.
+O botão "Buscar vagas" (`POST /api/search`) não leva nenhuma opção: a coleta é a que o `serve` recebeu por flag ao subir. O máximo que um pedido indevido conseguiria é rodar a mesma coleta que o dono já roda, uma por vez. O botão "Gerar carta" (`POST /api/jobs/{número}/letter`) segue a mesma ideia: o pedido só diz o número da vaga, e o servidor escreve uma carta por vez.
 
 ## API avulsa e banco
 

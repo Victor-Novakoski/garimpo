@@ -65,10 +65,10 @@ export function getFunnel(): Promise<Funnel> {
 }
 
 export function getCollect(): Promise<CollectState> {
-  return call<CollectState>('/collect')
+  return call<CollectState>('/search')
 }
 
 /** Starts a collection. A 409 (already running, or unavailable) still answers the state. */
 export function startCollect(): Promise<CollectState> {
-  return call<CollectState>('/collect', { method: 'POST' }, [409])
+  return call<CollectState>('/search', { method: 'POST' }, [409])
 }

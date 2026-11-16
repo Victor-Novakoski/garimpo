@@ -125,13 +125,13 @@ func (s *server) collectView() collectView {
 	return s.collect.view()
 }
 
-// collectStatus answers GET /collect.
+// collectStatus answers GET /search.
 func (s *server) collectStatus(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, s.collectView())
 }
 
-// collectStart answers POST /collect: it starts a collection and returns
-// at once. The request carries nothing; the panel follows GET /collect.
+// collectStart answers POST /search: it starts a collection and returns
+// at once. The request carries nothing; the panel follows GET /search.
 func (s *server) collectStart(w http.ResponseWriter, _ *http.Request) {
 	if s.collect == nil {
 		writeJSON(w, http.StatusConflict, s.collectView())

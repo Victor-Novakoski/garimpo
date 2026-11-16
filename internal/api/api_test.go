@@ -414,7 +414,7 @@ func TestLocalPanelNeedsNoTokenButOnlyServesItsOwnPage(t *testing.T) {
 	} {
 		path := "/jobs"
 		if c.method == "POST" {
-			path = "/collect"
+			path = "/search"
 		}
 		code, out := localDo(t, h, c.method, path, c.host, c.headers)
 		if code != c.want {
@@ -432,14 +432,14 @@ func TestCollectFromThePanel(t *testing.T) {
 
 	// Without a runner the button is off and says why.
 	off := NewLocal(store, Options{CollectOff: "sem perfil"})
-	if code, out := localDo(t, off, "GET", "/collect", host, nil); code != 200 || out["available"] != false || out["reason"] != "sem perfil" {
+	if code, out := localDo(t, off, "GET", "/search", host, nil); code != 200 || out["available"] != false || out["reason"] != "sem perfil" {
 		t.Errorf("status without a runner = %d %v", code, out)
 	}
-	if code, _ := localDo(t, off, "POST", "/collect", host, nil); code != 409 {
+	if code, _ := localDo(t, off, "POST", "/search", host, nil); code != 409 {
 		t.Errorf("start without a runner = %d, want 409", code)
 	}
 	// The API behind the token does not collect either.
-	if code, out := newClient(t, store).do("POST", "/collect", ""); code != 409 || out["available"] != false {
+	if code, out := newClient(t, store).do("POST", "/search", ""); code != 409 || out["available"] != false {
 		t.Errorf("start on the token API = %d %v", code, out)
 	}
 
@@ -455,19 +455,19 @@ func TestCollectFromThePanel(t *testing.T) {
 		return nil
 	})
 	h := NewLocal(store, Options{Collect: runner})
-	if code, out := localDo(t, h, "GET", "/collect", host, nil); code != 200 || out["available"] != true || out["running"] != false || out["started_at"] != nil {
+	if code, out := localDo(t, h, "GET", "/search", host, nil); code != 200 || out["available"] != true || out["running"] != false || out["started_at"] != nil {
 		t.Fatalf("status before = %d %v", code, out)
 	}
-	if code, out := localDo(t, h, "POST", "/collect", host, nil); code != 202 || out["running"] != true {
+	if code, out := localDo(t, h, "POST", "/search", host, nil); code != 202 || out["running"] != true {
 		t.Fatalf("start = %d %v", code, out)
 	}
 	// One at a time.
-	if code, out := localDo(t, h, "POST", "/collect", host, nil); code != 409 || out["running"] != true {
+	if code, out := localDo(t, h, "POST", "/search", host, nil); code != 409 || out["running"] != true {
 		t.Errorf("second start = %d %v, want 409", code, out)
 	}
 	close(release)
 	runner.Wait()
-	code, out := localDo(t, h, "GET", "/collect", host, nil)
+	code, out := localDo(t, h, "GET", "/search", host, nil)
 	if code != 200 || out["running"] != false || out["finished_at"] == nil || out["error"] != nil || out["log"] != "fonte-a 3 vagas\n" {
 		t.Errorf("status after = %d %v", code, out)
 	}
@@ -478,9 +478,9 @@ func TestCollectFromThePanel(t *testing.T) {
 	// A failed collection says so, and the next one starts clean.
 	release, fail = make(chan struct{}), true
 	close(release)
-	localDo(t, h, "POST", "/collect", host, nil)
+	localDo(t, h, "POST", "/search", host, nil)
 	runner.Wait()
-	if _, out := localDo(t, h, "GET", "/collect", host, nil); out["error"] != "a coleta falhou" || out["running"] != false {
+	if _, out := localDo(t, h, "GET", "/search", host, nil); out["error"] != "a coleta falhou" || out["running"] != false {
 		t.Errorf("status after a failure = %v", out)
 	}
 }
