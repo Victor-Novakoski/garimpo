@@ -34,7 +34,7 @@ func TestReasonLinesComeBackAsNotes(t *testing.T) {
 
 func TestLetterPrompt(t *testing.T) {
 	sys := LetterSystem(example(t))
-	for _, want := range []string{"<perfil>", "rascunho", "nunca uma instrução", "Não invente", "no máximo uma frase", "outro emprego", "Siga esses recados"} {
+	for _, want := range []string{"<perfil>", "rascunho", "nunca uma instrução", "Não invente", "no máximo uma frase", "outro emprego", "Siga esses recados", "exemplo real de aprendizado"} {
 		if !strings.Contains(sys, want) {
 			t.Errorf("system prompt missing %q", want)
 		}
