@@ -1,0 +1,22 @@
+{
+  "jobs": [
+    {
+      "id": 4012345,
+      "title": "Software Engineer (Go) - Pleno",
+      "absolute_url": "https://boards.greenhouse.io/stone/jobs/4012345",
+      "updated_at": "2026-11-04T15:20:00-03:00",
+      "location": {"name": "Remote - Brazil"},
+      "departments": [{"name": "Engineering"}],
+      "content": "&lt;p&gt;Time de &lt;strong&gt;pagamentos&lt;/strong&gt;.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Go&lt;/li&gt;&lt;li&gt;Kafka &amp;amp; Postgres&lt;/li&gt;&lt;/ul&gt;"
+    },
+    {
+      "id": 4012399,
+      "title": "Analista Comercial",
+      "absolute_url": "https://boards.greenhouse.io/stone/jobs/4012399",
+      "updated_at": "2026-11-03T10:00:00-03:00",
+      "location": {"name": "São Paulo"},
+      "departments": [{"name": "Sales"}],
+      "content": "&lt;p&gt;Vendas.&lt;/p&gt;"
+    }
+  ]
+}

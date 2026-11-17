@@ -1,0 +1,37 @@
+[
+  {
+    "id": "5cae0695-01bc-4b65-81a9-11fcba5c53ba",
+    "text": " Pessoa Engenheira de Software Pleno ",
+    "hostedUrl": "https://jobs.lever.co/neon/5cae0695-01bc-4b65-81a9-11fcba5c53ba",
+    "createdAt": 1792708355883,
+    "country": "BR",
+    "workplaceType": "remote",
+    "descriptionPlain": "Sobre a Neon\n\nSomos uma fintech.",
+    "additionalPlain": "Benefícios: vale refeição.",
+    "categories": {"commitment": "CLT", "department": "Tecnologia", "location": "Remoto", "team": "Pagamentos"},
+    "lists": [
+      {"text": "Requisitos", "content": "<li>Go ou Java</li><li>Kafka &amp; Postgres</li>"}
+    ]
+  },
+  {
+    "id": "aaaa1111-0000-0000-0000-000000000001",
+    "text": "Backend Engineer",
+    "hostedUrl": "https://jobs.lever.co/neon/aaaa1111-0000-0000-0000-000000000001",
+    "createdAt": 1792708355883,
+    "country": "FR",
+    "workplaceType": "hybrid",
+    "descriptionPlain": "Paris.",
+    "categories": {"location": "Paris, France"},
+    "lists": []
+  },
+  {
+    "id": "bbbb2222-0000-0000-0000-000000000002",
+    "text": "Analista de Suporte",
+    "hostedUrl": "https://jobs.lever.co/neon/bbbb2222-0000-0000-0000-000000000002",
+    "createdAt": 0,
+    "workplaceType": "unspecified",
+    "descriptionPlain": "Atendimento.",
+    "categories": {"location": "São Paulo"},
+    "lists": []
+  }
+]

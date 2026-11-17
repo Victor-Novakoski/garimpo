@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    # A throwaway Postgres for the store tests. It lives only for the job.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: garimpo
+          POSTGRES_PASSWORD: garimpo
+          POSTGRES_DB: garimpo_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U garimpo -d garimpo_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      GARIMPO_TEST_DATABASE_URL: postgres://garimpo:garimpo@localhost:5432/garimpo_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: gofmt
+        run: test -z "$(gofmt -l .)"
+      - run: go vet ./...
+      - run: go test -race ./...
+      - run: go build ./...
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      # The binary must carry the panel that was just built.
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: go build with the panel embedded
+        working-directory: .
+        run: go build ./... && go test ./internal/panel

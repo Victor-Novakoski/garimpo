@@ -1,0 +1,25 @@
+# binários
+/garimpo
+/garimpo-api
+/bin/
+*.exe
+
+# segredos e dados pessoais
+.env
+.env.*
+!.env.example
+profile.yaml
+data/private/
+
+# editor
+.idea/
+.vscode/
+.DS_Store
+
+# painel: dependências e o build (gerado pelo `npm run build`, embutido no binário)
+node_modules/
+/web/dist/
+/web/coverage/
+*.tsbuildinfo
+/internal/panel/dist/*
+!/internal/panel/dist/.gitkeep
