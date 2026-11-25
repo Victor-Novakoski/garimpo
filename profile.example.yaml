@@ -42,3 +42,12 @@ about: |
   Dev full stack com 3 anos de experiência em Go e React em produção:
   APIs REST, PostgreSQL e Docker. Procuro trabalho remoto, PJ ou freelance.
   Inglês intermediário.
+
+# Arquivos de texto locais (caminho absoluto ou começando com ~/) que entram
+# na nota da IA e na carta, depois do about e separados dele. Servem para
+# notas que você já mantém em outro lugar, como currículo ou metas: o texto
+# é relido a cada execução. Nenhuma regra lê estes arquivos. Limite de
+# 20 000 bytes por arquivo e 40 000 no total; arquivo que falta é erro.
+# about_files:
+#   - ~/notas/curriculo.md
+#   - ~/notas/metas.md

@@ -17,9 +17,10 @@ A nota da IA, de 0 a 30, atrás da interface `Scorer`, e o rascunho da carta de 
 ## Armadilhas conhecidas
 
 - O cache fica num arquivo na pasta de cache do usuário, por 60 dias. A chave junta modelo, prompt, perfil e vaga: mudar o prompt reavalia tudo. Erro não entra no cache.
+- O texto dos `about_files` do perfil entra no `profileBlock`, depois do `about` (decisão 046). Ele faz parte do prompt de sistema, que é a chave do cache: por isso mudar uma nota reavalia tudo. Não tire esse texto do prompt de sistema sem pôr o conteúdo na chave.
 - A tela da vaga lê a leitura da IA das linhas de motivo já gravadas (decisão 035), e a carta também. Quem escreve as linhas é o `ReasonLines` e quem lê é o `NotesFromReasons` (os dois em `letter.go`) e o `splitReasons` do painel (`web/src/format.ts`): mudar o texto pede mudar os três.
 - A carta não tem cache: cada pedido é uma chamada ao modelo.
 
 ## Ver também
 
-Decisões 007, 015, 016, 017, 018, 019 e 044; [`docs/SECURITY.md`](../../docs/SECURITY.md#texto-de-vaga).
+Decisões 007, 015, 016, 017, 018, 019, 044 e 046; [`docs/SECURITY.md`](../../docs/SECURITY.md#texto-de-vaga).
