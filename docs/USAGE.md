@@ -26,6 +26,14 @@ go run ./cmd/garimpo collect -min 45  # só vagas com nota 45 ou mais
 
 Os 30 pontos que faltam vêm de uma IA que lê a vaga inteira e compara com o seu perfil. Ela diz o encaixe (forte, bom, parcial, fraco ou nenhum), o que conta a favor, o que falta e o que destacar na candidatura. Preencha o campo `about` do `profile.yaml` com a sua experiência: é o que ela usa para comparar.
 
+Se você já mantém o currículo ou as metas em arquivos de texto (notas em Markdown, por exemplo), aponte para eles em `about_files` em vez de copiar o texto para o `about`:
+
+```yaml
+about_files: [~/notas/curriculo.md, ~/notas/metas.md]
+```
+
+O texto é lido toda vez que o perfil é carregado e entra no que a IA lê (nota e carta), depois do `about` e separado dele. Os caminhos são absolutos ou começam com `~/`. Cada arquivo pode ter até 20 000 bytes e todos juntos até 40 000; passar disso, faltar um arquivo ou ele não ser texto UTF-8 para a execução com um erro que diz qual caminho. Nenhuma regra do filtro ou da nota de 0 a 70 lê esses arquivos. Mudou um arquivo, a IA reavalia as vagas na próxima rodada, porque o cache depende do perfil inteiro.
+
 ```bash
 go run ./cmd/garimpo collect -ai local -why   # usa o Claude Code da máquina (claude -p) e o seu plano
 go run ./cmd/garimpo collect -ai api -why     # usa a API do Claude, com ANTHROPIC_API_KEY
