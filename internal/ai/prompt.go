@@ -78,6 +78,17 @@ func profileBlock(p profile.Profile) string {
 		b.WriteString(sanitize(about))
 		b.WriteString("\n")
 	}
+	// The about files come after the hand-written text and apart from it,
+	// one block per file, so a note never reads as part of another.
+	for _, f := range p.AboutTexts {
+		text := strings.TrimSpace(f.Text)
+		if text == "" {
+			continue
+		}
+		fmt.Fprintf(&b, "Notas da pessoa (arquivo %s):\n", sanitize(f.Name))
+		b.WriteString(sanitize(text))
+		b.WriteString("\n")
+	}
 	b.WriteString("</perfil>")
 	return b.String()
 }
